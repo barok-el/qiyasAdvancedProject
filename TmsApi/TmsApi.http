@@ -1,4 +1,5 @@
-@TmsApi_HostAddress = http://localhost:5026
+
+@TmsApi_HostAddress = http://localhost:5240
 
 GET {{TmsApi_HostAddress}}/api/assessments/results
 Accept: application/json
