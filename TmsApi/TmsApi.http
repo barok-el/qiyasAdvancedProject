@@ -8,5 +8,18 @@ X-Training-User: student1
 GET {{TmsApi_HostAddress}}/api/test/deferred
 Accept: application/json
 ###
+GET  {{TmsApi_HostAddress}}/api/enrollments
+Accept: application/json
+###
 GET {{TmsApi_HostAddress}}/api/test/translation-fail
+Accept: application/json
+###
+GET {{TmsApi_HostAddress}}/api/test/students-in-course/1
+Accept: application/json
+###
+GET {{TmsApi_HostAddress}}/api/test/students-paged
+Accept: application/json
+
+###
+GET {{TmsApi_HostAddress}}/api/test/average-gpa-per-course
 Accept: application/json

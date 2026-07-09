@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TmsApi.Services;
 
 namespace TmsApi.Services;
 
@@ -16,12 +17,15 @@ public class EnrollmentWorker
         using var scope = _scopeFactory.CreateScope();
 
         var enrollmentService =
-            scope.ServiceProvider.GetRequiredService<IEnrollmentService>();
+            scope.ServiceProvider
+            .GetRequiredService<IEnrollmentService>();
 
         // Simulate worker activity
-        var enrollments = enrollmentService.GetAllAsync().Result;
+        var enrollments = enrollmentService
+            .GetAllAsync(CancellationToken.None)
+            .Result;
 
         Console.WriteLine(
-            $"Worker processed {enrollments.Count} enrollments.");
+            $"Worker processed {enrollments.Count()} enrollments.");
     }
 }

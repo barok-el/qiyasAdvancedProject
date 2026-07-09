@@ -10,4 +10,6 @@ public decimal GPA { get; set; }
 public bool IsActive { get; set; } = true;
 // Navigation property for many-to-many relationship
 public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
+
 }

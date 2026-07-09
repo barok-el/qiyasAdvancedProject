@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
+
 using TmsApi.Data;
 using TmsApi.Entities;
 using TmsApi.Middleware;
@@ -7,12 +8,16 @@ using TmsApi.Services;
 using TmsApi.Configuration;
 using Scalar.AspNetCore;
 using TmsApi.Exceptions;
+using TmsApi.Filters;
+using TmsApi.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddAuthentication("Training").AddScheme<AuthenticationSchemeOptions, TrainingAuthHandler>("Training", null);
 builder.Services.AddAuthorization();
-
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
 builder.Services.AddControllers();
 
@@ -26,7 +31,7 @@ options.UseNpgsql(builder.Configuration.GetConnectionString("TmsDatabase"))
 .LogTo(Console.WriteLine, LogLevel.Information) // Log SQL to output window
 .EnableSensitiveDataLogging()); // Show parameters in querylogs (dev only)
 
-builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+//builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
 builder.Services.AddSingleton<EnrollmentWorker>();
 builder.Host.UseDefaultServiceProvider(options =>
@@ -39,7 +44,10 @@ builder.Services.AddOptions<PaymentOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<AuditLogFilter>();
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -58,37 +66,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-
-app.MapGet("/api/assessments/results",()=> {
-    //Console.WriteLine("MINIMAL API ENDPOINT CALLED");
-    return Results.Ok(new
-    {
-    message = "Placeholder assessment results"
-    });
-})
-.RequireAuthorization();
-
-
-app.MapGet("/api/enrollments/worker-smoke",
-    (EnrollmentWorker worker) =>
-{
-    worker.ProcessBatch();
-
-    return Results.Ok("processed");
-});
-
-
-app.MapGet("/api/error", () =>
-{
-    throw new TmsDatabaseException(
-        "Simulated database failure for ProblemDetails testing");
-});
-
-
-
-
-
 
 
 app.MapControllers();
@@ -110,9 +87,9 @@ new() { RegistrationNumber = "TMS-2026-0005", Name = "EvanWright", GPA = 2.5m, I
 context.Students.AddRange(students);
 var courses = new List<Course>
 {
-new() { Code = "CS-101", Title = "Introduction to ComputerScience", Capacity = 30 },
-new() { Code = "CS-201", Title = "Data Structures and Algorithms", Capacity = 25 },
-new() { Code = "MAT-101", Title = "Calculus I", Capacity =
+new() { Code = "CS-101", Title = "Introduction to ComputerScience", MaxCapacity = 30 },
+new() { Code = "CS-201", Title = "Data Structures and Algorithms", MaxCapacity = 25 },
+new() { Code = "MAT-101", Title = "Calculus I", MaxCapacity =
 40 }
 };
 context.Courses.AddRange(courses);
@@ -127,5 +104,12 @@ new() { StudentId = students[3].Id, CourseId = courses[1].Id, Grade = 3.9m }
 context.Enrollments.AddRange(enrollments);
 context.SaveChanges();
 }
+}
+
+if (app.Environment.IsDevelopment())
+{
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<TmsDbContext>();
+await DataSeeder.SeedAsync(context);
 }
 app.Run();
