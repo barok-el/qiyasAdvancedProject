@@ -42,4 +42,25 @@ public async Task<IEnumerable<Enrollment>> GetAllAsync(
         .AsNoTracking()
         .ToListAsync(ct);
 }
+public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(
+    int courseId,
+    CancellationToken ct)
+{
+
+    return await context.Enrollments
+        .AsNoTracking()
+
+        .Where(e => e.CourseId == courseId)
+
+        .Select(e =>
+            new EnrollmentResponseDto(
+                e.Id,
+                e.CourseId,
+                e.StudentId,
+                e.EnrolledAt
+            ))
+
+        .ToListAsync(ct);
+
+}
 }

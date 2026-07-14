@@ -23,3 +23,19 @@ Accept: application/json
 ###
 GET {{TmsApi_HostAddress}}/api/test/average-gpa-per-course
 Accept: application/json
+###
+GET {{TmsApi_HostAddress}}/api/v1/courses
+Accept: application/json
+###
+GET {{TmsApi_HostAddress}}/api/v2/courses
+Accept: application/json
+
+###
+GET {{TmsApi_HostAddress}}/api/courses
+X-Api-Version: 1.0
+Accept: application/json
+
+###
+GET {{TmsApi_HostAddress}}/api/courses
+X-Api-Version: 2.0
+Accept: application/json
