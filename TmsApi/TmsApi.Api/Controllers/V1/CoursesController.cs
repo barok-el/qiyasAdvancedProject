@@ -1,8 +1,8 @@
 using Asp.Versioning;
-using TmsApi.Data;
+using TmsApi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-namespace TmsApi.Controllers.V1;
+namespace TmsApi.Api.Controllers.V1;
 [ApiController]
 [Route("api/v{version:apiVersion}/courses")]
 [Route("api/courses")]

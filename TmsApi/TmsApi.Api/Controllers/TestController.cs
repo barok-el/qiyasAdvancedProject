@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using TmsApi.Data;
-using TmsApi.Entities; // Make sure your entities namespace is included
+using TmsApi.Infrastructure.Persistence;
+using TmsApi.Domain.Entities; // Make sure your entities namespace is included
 
-namespace TmsApi.Controllers;
+namespace TmsApi.Api.Controllers;
 
 [ApiController]
 [Route("api/test")]
