@@ -3,12 +3,17 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 using TmsApi.Infrastructure.Persistence;
+using TmsApi.Application.Common.Interface;
 using TmsApi.Domain.Entities;
-using TmsApi.Infrastructure.Services;
-using TmsApi.Application.Dtos;
+//using TmsApi.Application.Dtos;
 using TmsApi.Api.Filters;
 using TmsApi.Api.Middleware;
 using Scalar.AspNetCore;
+using TmsApi.Application.Behaviors;
+using TmsApi.Application.Enrollments.Commands;
+using MediatR;
+using FluentValidation;
+using TmsApi.Api.ExceptionHandlers;
 
 
 
@@ -18,6 +23,25 @@ Console.WriteLine(builder.Environment.EnvironmentName);
 Console.WriteLine(builder.Configuration.GetConnectionString("TmsDatabase"));
 
 // Add services to the container.
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(
+        typeof(EnrollStudentHandler).Assembly));
+
+builder.Services.AddValidatorsFromAssembly(
+    typeof(EnrollStudentValidator).Assembly);
+
+// LoggingBehavior FIRST—it must wrap ValidationBehavior
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(LoggingBehavior<,>));
+
+builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>),
+    typeof(ValidationBehavior<,>));
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddProblemDetails();
 builder.Services.AddAuthentication("Training").AddScheme<AuthenticationSchemeOptions, TrainingAuthHandler>("Training", null);
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ICourseService, CourseService>();
@@ -104,7 +128,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-//app.UseMiddleware<V1DeprecationMiddleware>();
+app.UseMiddleware<V1DeprecationMiddleware>();
 
 app.MapControllers();
 // Seed test data at startup

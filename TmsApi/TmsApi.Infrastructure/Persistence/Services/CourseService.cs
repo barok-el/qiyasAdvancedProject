@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using TmsApi.Infrastructure.Persistence;
 using TmsApi.Domain.Entities;
 using TmsApi.Application.Dtos;
 using Microsoft.Extensions.Logging;
+using TmsApi.Application.Common.Interface;
 
-namespace TmsApi.Infrastructure.Services;
+namespace TmsApi.Infrastructure.Persistence;
 
 
 public class CourseService(
@@ -200,4 +200,17 @@ public class CourseService(
 
     }
 
+    public Task<CourseResponseDto?> GetByCodeAsync(
+    string courseCode,
+    CancellationToken ct) =>
+    context.Courses
+        .AsNoTracking()
+        .Where(c => c.Code == courseCode)
+        .Select(c => new CourseResponseDto(
+            c.Id,
+            c.Code,
+            c.Title,
+            c.MaxCapacity,
+            c.Enrollments.Count))
+        .FirstOrDefaultAsync(ct);
 }

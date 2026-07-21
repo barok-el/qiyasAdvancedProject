@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TmsApi.Infrastructure.Services;
+using TmsApi.Application.Common.Interface;
 
 namespace TmsApi.Services;
 
