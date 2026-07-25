@@ -3,6 +3,7 @@ using TmsApi.Domain.Entities;
 using TmsApi.Application.Dtos;
 using Microsoft.Extensions.Logging;
 using TmsApi.Application.Common.Interface;
+using TmsApi.Application.Courses.Commands;
 
 namespace TmsApi.Infrastructure.Persistence;
 
@@ -200,17 +201,46 @@ public class CourseService(
 
     }
 
-    public Task<CourseResponseDto?> GetByCodeAsync(
+    public Task<Course?> GetByCodeAsync(
     string courseCode,
     CancellationToken ct) =>
     context.Courses
         .AsNoTracking()
-        .Where(c => c.Code == courseCode)
-        .Select(c => new CourseResponseDto(
-            c.Id,
-            c.Code,
-            c.Title,
-            c.MaxCapacity,
-            c.Enrollments.Count))
-        .FirstOrDefaultAsync(ct);
+        .Include(c => c.Enrollments)
+        .FirstOrDefaultAsync(
+            c => c.Code == courseCode,
+            ct);
+
+    public async Task<IEnumerable<CourseResponseDto>> GetAllAsync(
+    CancellationToken ct)
+    {
+        return await context.Courses
+            .AsNoTracking()
+            .Select(c => new CourseResponseDto(
+                c.Id,
+                c.Code,
+                c.Title,
+                c.MaxCapacity,
+                c.Enrollments.Count))
+            .ToListAsync(ct);
+    }
+    public async Task UpdateAsync(
+    UpdateCourseCommand command,
+    CancellationToken ct)
+    {
+        var course = await context.Courses
+            .FirstOrDefaultAsync(
+                c => c.Id == command.Id,
+                ct);
+
+        if (course is null)
+            throw new KeyNotFoundException(
+                $"Course {command.Id} not found.");
+
+        course.Code = command.Code;
+        course.Title = command.Title;
+        course.MaxCapacity = command.MaxCapacity;
+
+        await context.SaveChangesAsync(ct);
+    }
 }

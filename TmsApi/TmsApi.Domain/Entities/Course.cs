@@ -1,5 +1,4 @@
 
-
 namespace TmsApi.Domain.Entities;
 public class Course
 {

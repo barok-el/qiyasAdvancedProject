@@ -15,7 +15,7 @@ EnrollStudentCommand command, CancellationToken ct)
     if (course is null)
         return Result<EnrollmentCreated, EnrollmentError>.Failure(
         EnrollmentError.CourseNotFound(command.CourseCode));
-    if (course.EnrollmentCount >= course.MaxCapacity)
+    if (course.Enrollments.Count >= course.MaxCapacity)
         return Result<EnrollmentCreated, EnrollmentError>.Failure(
         EnrollmentError.CourseFull(course.Title, course.MaxCapacity));
 

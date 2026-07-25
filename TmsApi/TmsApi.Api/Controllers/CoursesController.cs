@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using TmsApi.Application.Dtos;
 using TmsApi.Application.Common.Interface;
+using MediatR;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace TmsApi.Api.Controllers;
 
@@ -20,7 +22,9 @@ public class CoursesController(
 
 
     // Session 2 Pagination Endpoint
+    // Session 2 Pagination Endpoint
     [HttpGet]
+    [EnableRateLimiting("search")]
     [ProducesResponseType(
         typeof(PagedResponse<CourseResponseDto>),
         StatusCodes.Status200OK)]
@@ -30,16 +34,14 @@ public class CoursesController(
     public async Task<IActionResult> GetCourses(
         [FromQuery] PagedRequest request,
         CancellationToken ct)
-    {
+        {
+            var result =
+                await courseService.GetCoursesAsync(
+                    request,
+                    ct);
 
-        var result =
-            await courseService.GetCoursesAsync(
-                request,
-                ct);
-
-
-        return Ok(result);
-    }
+            return Ok(result);
+        }
 
 
 
@@ -207,5 +209,7 @@ public class CoursesController(
             },
             course);
     }
+
+   
 
 }
