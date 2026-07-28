@@ -1,0 +1,73 @@
+{
+  "hash": "5881f2c3",
+  "configHash": "a8d73e65",
+  "lockfileHash": "efc5c0f8",
+  "browserHash": "3ce4bf1e",
+  "optimized": {
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "65a08413",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "aebef18b",
+      "needsInterop": false
+    },
+    "@angular/core/rxjs-interop": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/rxjs-interop.mjs",
+      "file": "@angular_core_rxjs-interop.js",
+      "fileHash": "17431cb7",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "13b6d973",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "aeda8cef",
+      "needsInterop": false
+    },
+    "@angular/router": {
+      "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
+      "file": "@angular_router.js",
+      "fileHash": "02c04bf5",
+      "needsInterop": false
+    },
+    "rxjs/operators": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
+      "file": "rxjs_operators.js",
+      "fileHash": "0f83c925",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-CTCMQQRG": {
+      "file": "chunk-CTCMQQRG.js"
+    },
+    "chunk-OJ5LHFEG": {
+      "file": "chunk-OJ5LHFEG.js"
+    },
+    "chunk-PZCS7SLG": {
+      "file": "chunk-PZCS7SLG.js"
+    },
+    "chunk-LZ4XTYG6": {
+      "file": "chunk-LZ4XTYG6.js"
+    },
+    "chunk-V74Y5YLB": {
+      "file": "chunk-V74Y5YLB.js"
+    },
+    "chunk-KAS2GAPE": {
+      "file": "chunk-KAS2GAPE.js"
+    },
+    "chunk-GKZSDLI5": {
+      "file": "chunk-GKZSDLI5.js"
+    }
+  }
+}
