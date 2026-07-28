@@ -158,6 +158,19 @@ builder.Services.AddRateLimiter(options =>
             limiterOptions.AutoReplenishment = true;
         });
 });
+
+// =======================================================
+// CORS Policy handling
+// =======================================================
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    policy.WithOrigins("http://localhost:4200")
+    .AllowAnyHeader()
+    .AllowAnyMethod());
+});
+
 // =======================================================
 // MediatR
 // =======================================================
@@ -350,6 +363,12 @@ app.MapHealthChecks("/health/live")
 
 app.MapHealthChecks("/health/ready")
     .DisableRateLimiting();
+
+// =======================================================
+// CORS
+// =======================================================
+
+app.UseCors("AllowAngular");
 
 // =======================================================
 // OpenAPI + Scalar
