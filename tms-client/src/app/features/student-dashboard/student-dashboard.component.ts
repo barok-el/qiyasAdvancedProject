@@ -1,20 +1,23 @@
 import { CourseCardComponent } from "../../ui/course-card/course-card";
 import { Course } from "../../models/course.model";
+import { EnrollmentStore } from '../../store/enrollment.store';
 import { rxResource } from "@angular/core/rxjs-interop";
 import { CourseService } from "../../services/course.service";
 import { Router, RouterLink } from '@angular/router';
+import { EnrollmentListComponent } from '../enrollment-list/enrollment-list.component';
 import 
 { 
-  Component, signal, inject,computed } from "@angular/core";
+  Component, signal, inject, computed, OnInit } from "@angular/core";
   @Component({
     selector: 'app-student-dashboard',
     standalone: true,
-    imports: [CourseCardComponent], // This tells Angular: "I use CourseCardComponent in my template"
+    imports: [CourseCardComponent, EnrollmentListComponent],
     templateUrl: './student-dashboard.component.html',
     styleUrl: './student-dashboard.component.scss'
   })
-  export class StudentDashboardComponent {
+  export class StudentDashboardComponent implements OnInit {
     private api = inject(CourseService);
+    enrollmentStore = inject(EnrollmentStore);
     studentName = signal("Liya Kebede");
     earnedCredits = signal(45);
     graduationStatus = computed(() =>
@@ -35,6 +38,11 @@ import
       enrollmentCount: 12,
     };
     private router = inject(Router);
+
+    ngOnInit() {
+      this.enrollmentStore.loadEnrollments();
+    }
+
     handleEnroll(course: Course) {
       this.selectedCourse.set(course);
       console.log('Enrollment requested for:', course.title);
@@ -42,7 +50,4 @@ import
       queryParams: { courseId: course.id },
     });
     }
-    
-
-
 }

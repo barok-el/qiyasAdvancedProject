@@ -2,6 +2,7 @@
     <h1>Welcome, {{ studentName() }}</h1>
     <p>Credits Earned: {{ earnedCredits() }}</p>
     <p>Graduation Status: {{ graduationStatus() }}</p>
+    <p>Pending enrollments: {{ enrollmentStore.pendingCount() }}</p>
     <h2>Course Catalog</h2>
 
     @if (coursesResource.isLoading()) {
@@ -27,5 +28,7 @@
             ({{ picked.code }})
         </p>
     }
-</div>
 
+    <h2>Enrollment requests</h2>
+    <tms-enrollment-list />
+</div>

@@ -1,6 +1,6 @@
 import {
   Title
-} from "./chunk-CTCMQQRG.js";
+} from "./chunk-JLV4AEVQ.js";
 import {
   HashLocationStrategy,
   Location,
@@ -10,12 +10,12 @@ import {
   PathLocationStrategy,
   PlatformNavigation,
   ViewportScroller
-} from "./chunk-OJ5LHFEG.js";
-import "./chunk-PZCS7SLG.js";
+} from "./chunk-I3WJK522.js";
+import "./chunk-VHH2ZXCB.js";
 import {
   LOCATION_INITIALIZED,
   PlatformLocation
-} from "./chunk-LZ4XTYG6.js";
+} from "./chunk-SMALP2LE.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -67,7 +67,7 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-V74Y5YLB.js";
+} from "./chunk-DKH3OU4Z.js";
 import {
   DOCUMENT,
   DestroyRef,
@@ -82,12 +82,10 @@ import {
   RuntimeError,
   Version,
   computed,
-  defer,
   effect,
   formatRuntimeError,
   inject,
   isInjectable,
-  isObservable,
   isStandalone,
   linkedSignal,
   makeEnvironmentProviders,
@@ -99,7 +97,12 @@ import {
   ɵɵdefineInjectable,
   ɵɵdefineInjector,
   ɵɵinject
-} from "./chunk-KAS2GAPE.js";
+} from "./chunk-ZN6Z3ZQ7.js";
+import "./chunk-4YCCEXQQ.js";
+import {
+  defer,
+  isObservable
+} from "./chunk-J46EEYGT.js";
 import {
   BehaviorSubject,
   EMPTY,
@@ -129,7 +132,7 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-GKZSDLI5.js";
+} from "./chunk-U7EDC2PH.js";
 
 // node_modules/@angular/router/fesm2022/_router-chunk.mjs
 var PRIMARY_OUTLET = "primary";
