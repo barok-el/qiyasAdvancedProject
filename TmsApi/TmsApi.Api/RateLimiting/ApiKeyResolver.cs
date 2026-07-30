@@ -1,0 +1,36 @@
+namespace TmsApi.Api.RateLimiting;
+
+public static class ApiKeyResolver
+{
+    private static readonly Dictionary<string, ApiKeyTier> Keys =
+        new(StringComparer.Ordinal)
+        {
+            ["tms-free-demo-001"] = ApiKeyTier.Free,
+            ["tms-paid-001"] = ApiKeyTier.Paid
+        };
+
+
+    public static (string PartitionKey, ApiKeyTier Tier) Resolve(
+        HttpContext context)
+    {
+        var key = context.Request.Headers["X-Api-Key"]
+            .ToString();
+
+
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return
+            (
+                context.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+
+                ApiKeyTier.Anonymous
+            );
+        }
+
+
+        return Keys.TryGetValue(key, out var tier)
+            ? (key, tier)
+            : (key, ApiKeyTier.Anonymous);
+    }
+}
