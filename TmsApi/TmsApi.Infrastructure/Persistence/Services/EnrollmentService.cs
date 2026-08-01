@@ -94,44 +94,4 @@ public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(
             .Where(e => e.StudentId == studentId)
             .ToListAsync(ct);
     }
-
-    public async Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListAsync(
-        CancellationToken ct) =>
-        await context.Enrollments
-            .AsNoTracking()
-            .OrderByDescending(e => e.EnrolledAt)
-            .Select(e => new EnrollmentListItemDto(
-                e.Id,
-                e.StudentId,
-                e.Student.Name,
-                e.CourseId,
-                e.Course.Title,
-                e.Status,
-                e.EnrolledAt))
-            .ToListAsync(ct);
-
-    public async Task<EnrollmentListItemDto?> ApproveAsync(
-        int id,
-        CancellationToken ct)
-    {
-        var enrollment = await context.Enrollments
-            .Include(e => e.Student)
-            .Include(e => e.Course)
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
-        if (enrollment is null)
-            return null;
-
-        enrollment.Status = "Approved";
-        await context.SaveChangesAsync(ct);
-
-        return new EnrollmentListItemDto(
-            enrollment.Id,
-            enrollment.StudentId,
-            enrollment.Student.Name,
-            enrollment.CourseId,
-            enrollment.Course.Title,
-            enrollment.Status,
-            enrollment.EnrolledAt);
-    }
 }

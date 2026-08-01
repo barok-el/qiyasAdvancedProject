@@ -1,5 +1,6 @@
 import { Routes } from "@angular/router";
 
+
 export const routes: Routes = [
     {
         path: "dashboard",
@@ -18,6 +19,26 @@ export const routes: Routes = [
         path: 'enroll',
         loadComponent: () => import('./features/enrollment-form/enrollment-form.component')
         .then(m => m.EnrollmentFormComponent)
+    },
+    {
+        path: 'dashboard',
+        loadComponent: () =>
+            import('./features/instructor-dashboard/instructor-dashboard.component')
+            .then(m => m.InstructorDashboardComponent)
+    },
+    {
+        path: 'enrollments',
+        loadComponent: () =>
+        import('./features/enrollment-list/enrollment-list.component')
+        .then(m => m.EnrollmentListComponent)
+    },
+
+    // ...your existing routes (enrollment-list, etc.)
+
+    {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
     }
     
 ];
