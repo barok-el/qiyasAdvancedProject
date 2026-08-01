@@ -21,7 +21,7 @@ export const routes: Routes = [
         .then(m => m.EnrollmentFormComponent)
     },
     {
-        path: 'dashboard',
+        path: 'instructor',
         loadComponent: () =>
             import('./features/instructor-dashboard/instructor-dashboard.component')
             .then(m => m.InstructorDashboardComponent)
@@ -32,13 +32,4 @@ export const routes: Routes = [
         import('./features/enrollment-list/enrollment-list.component')
         .then(m => m.EnrollmentListComponent)
     },
-
-    // ...your existing routes (enrollment-list, etc.)
-
-    {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-    }
-    
 ];

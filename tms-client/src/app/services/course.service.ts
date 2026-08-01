@@ -6,7 +6,7 @@ import { Course, CourseDetail, PagedResponse } from "../models/course.model";
 @Service()
 export class CourseService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5240/api/v2/courses';
+  private readonly baseUrl = '/api/v2/courses';
 
   getAll(page = 1, pageSize = 50) {
     return this.http
@@ -20,4 +20,3 @@ export class CourseService {
     return this.http.get<CourseDetail>(`${this.baseUrl}/${id}`);
   }
 }
-

@@ -8,6 +8,10 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
     {
         builder.HasKey(e => e.Id);
 
+        builder.Property(e => e.Status)
+               .HasMaxLength(20)
+               .HasDefaultValue("Pending");
+
         builder.HasOne(e => e.Student)
                .WithMany(s => s.Enrollments)
                .HasForeignKey(e => e.StudentId);

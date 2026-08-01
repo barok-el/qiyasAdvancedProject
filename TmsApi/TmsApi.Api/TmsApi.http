@@ -8,7 +8,7 @@ X-Training-User: student1
 GET {{TmsApi_HostAddress}}/api/test/deferred
 Accept: application/json
 ###
-GET  {{TmsApi_HostAddress}}/api/enrollments
+GET {{TmsApi_HostAddress}}/api/v2/enrollments
 Accept: application/json
 ###
 GET {{TmsApi_HostAddress}}/api/test/translation-fail
@@ -29,6 +29,16 @@ Accept: application/json
 ###
 GET {{TmsApi_HostAddress}}/api/v2/courses
 Accept: application/json
+
+###
+GET {{TmsApi_HostAddress}}/api/v2/enrollments
+Accept: application/json
+
+###
+POST {{TmsApi_HostAddress}}/api/v2/enrollments/1/approve
+Accept: application/json
+
+{}
 
 ###
 GET {{TmsApi_HostAddress}}/api/courses
