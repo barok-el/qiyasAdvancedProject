@@ -13,6 +13,7 @@ describe('AnalyticsChartComponent', () => {
 
     fixture = TestBed.createComponent(AnalyticsChartComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('data', []);
     await fixture.whenStable();
   });
 

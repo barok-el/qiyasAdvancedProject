@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TmsApi.Application.Dtos;
 using TmsApi.Infrastructure.Persistence;
 namespace TmsApi.Api.Controllers.V2;
 [ApiController]
@@ -61,7 +62,50 @@ return Ok(new
     }
 });
 }
-}
 
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetCourseById(
+        int id,
+        CancellationToken ct = default)
+    {
+        var course = await context.Courses
+            .AsNoTracking()
+            .Where(c => c.Id == id)
+            .Select(c => new
+            {
+                c.Id,
+                c.Code,
+                c.Title,
+                c.MaxCapacity,
+                EnrollmentCount = c.Enrollments.Count
+            })
+            .FirstOrDefaultAsync(ct);
+
+        if (course is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Course not found",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        var coursePath = $"/api/v2/courses/{course.Id}";
+
+        return Ok(new
+        {
+            course.Id,
+            course.Code,
+            course.Title,
+            course.MaxCapacity,
+            course.EnrollmentCount,
+            Links = new[]
+            {
+                new LinkDto(coursePath, "self", "GET"),
+                new LinkDto("/api/v2/enrollments", "enroll", "POST")
+            }
+        });
+    }
+}
 
 

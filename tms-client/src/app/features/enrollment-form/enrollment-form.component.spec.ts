@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { EnrollmentFormComponent } from './enrollment-form.component';
 
@@ -9,6 +10,10 @@ describe('EnrollmentFormComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EnrollmentFormComponent],
+      providers: [{
+        provide: ActivatedRoute,
+        useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+      }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnrollmentFormComponent);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using System.Threading.RateLimiting;
+using System.Threading.Channels;
 
 using FluentValidation;
 using MediatR;
@@ -20,6 +21,12 @@ using TmsApi.Application.Enrollments.Commands;
 using TmsApi.Domain.Entities;
 using TmsApi.Infrastructure.Persistence;
 using TmsApi.Infrastructure.Services;
+using TmsApi.Infrastructure.Transcripts;
+using TmsApi.Application.Transcripts;
+using TmsApi.Infrastructure.Workers;
+using TmsApi.Api.Hubs;
+using TmsApi.Application.Notifications;
+using TmsApi.Api.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -183,6 +190,48 @@ builder.Services.AddValidatorsFromAssembly(
     typeof(EnrollStudentValidator).Assembly);
 
 // =======================================================
+// In-Memory Transcript Status Store
+// Shared by all requests and background workers
+// =======================================================
+
+builder.Services.AddSingleton<
+    ITranscriptStatusStore,
+    InMemoryTranscriptStatusStore>();
+
+// =======================================================
+// Transcript Processing Queue
+// Bounded channel used to queue transcript requests
+// =======================================================
+
+builder.Services.AddSingleton(
+    Channel.CreateBounded<TranscriptRequest>(
+        new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait
+        }));
+
+// =======================================================
+// Background Transcript Processing Worker
+// Processes queued transcript generation requests
+// =======================================================
+
+builder.Services.AddHostedService<TranscriptWorker>();
+
+// =======================================================
+// SignalR Real-Time Communication
+// =======================================================
+
+builder.Services.AddSignalR();
+
+// =======================================================
+// Transcript Notification Service
+// =======================================================
+
+builder.Services.AddSingleton<
+    ITranscriptNotificationService,
+    SignalRTranscriptNotificationService>();
+
+// =======================================================
 // Pipeline Behaviors
 // =======================================================
 
@@ -335,6 +384,12 @@ builder.Host.UseDefaultServiceProvider(options =>
 var app = builder.Build();
 
 // =======================================================
+// Map SignalR Hub Endpoint
+// =======================================================
+
+app.MapHub<TmsHub>("/hubs/tms");
+
+// =======================================================
 // Middleware Pipeline
 // =======================================================
 
@@ -357,6 +412,15 @@ app.UseAuthorization();
 // =======================================================
 // Health Endpoints
 // =======================================================
+
+app.MapGet("/", () => Results.Ok(new
+{
+    name = "TMS API",
+    status = "running",
+    health = "/health/live",
+    courses = "/api/v2/courses",
+    enrollments = "/api/v2/enrollments"
+})).DisableRateLimiting();
 
 app.MapHealthChecks("/health/live")
     .DisableRateLimiting();
@@ -457,6 +521,14 @@ using (var scope = app.Services.CreateScope())
                 IsActive = true
             },
 
+             new()
+            {
+                RegistrationNumber = "TMS-2026-0006",
+                Name = "Sara Stars",
+                GPA = 3.5m,
+                IsActive = false
+            },
+
             new()
             {
                 RegistrationNumber = "TMS-2026-0005",
@@ -524,6 +596,20 @@ using (var scope = app.Services.CreateScope())
                 StudentId = students[3].Id,
                 CourseId = courses[1].Id,
                 Grade = 3.9m
+            },
+
+             new()
+            {
+                StudentId = students[3].Id,
+                CourseId = courses[1].Id,
+                Grade = 2.8m
+            },
+
+             new()
+            {
+                StudentId = students[1].Id,
+                CourseId = courses[1].Id,
+                Grade = 2.8m
             }
         };
 
