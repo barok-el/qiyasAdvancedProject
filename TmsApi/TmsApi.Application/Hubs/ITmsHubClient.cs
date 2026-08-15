@@ -14,4 +14,7 @@ public interface ITmsHubClient
         string courseCode,
         int studentId,
         decimal grade);
+    Task ReceiveEnrollmentStatusUpdated(
+        string enrollmentId, 
+        string status);
 }

@@ -1,0 +1,56 @@
+<h2>Grade Submission Form</h2>
+
+<h3>Instructor Midterm Grading</h3>
+
+<form [formGroup]="gradeForm" (ngSubmit)="onSubmit()">
+    <label for="studentId">Student ID</label>
+    <input
+        id="studentId"
+        type="number"
+        formControlName="studentId"
+    />
+
+    @if (gradeForm.controls.studentId.hasError('required')) {
+        <p>Student ID is required</p>
+    }
+
+    <label for="courseId">Course ID</label>
+    <input
+        id="courseId"
+        type="number"
+        formControlName="courseId"
+    />
+
+    @if (gradeForm.controls.courseId.hasError('required')) {
+        <p>Course ID is required</p>
+    }
+
+    <label for="score">Score (0-100)</label>
+    <input
+        id="score"
+        type="number"
+        formControlName="score"
+    />
+
+    @if (
+        gradeForm.controls.score.hasError('min') ||
+        gradeForm.controls.score.hasError('max')
+    ) {
+        <p>Score must be between 0 and 100</p>
+    }
+
+    @if (isSubmitting) {
+        <p>Submitting...</p>
+    }
+
+    @if (submissionStatus) {
+        <p>{{ submissionStatus }}</p>
+    }
+
+    <button
+        type="submit"
+        [disabled]="isSubmitting || gradeForm.invalid"
+    >
+        Submit Final Grade
+    </button>
+</form>

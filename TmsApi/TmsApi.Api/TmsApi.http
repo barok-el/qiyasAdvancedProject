@@ -46,6 +46,10 @@ X-Api-Version: 1.0
 Accept: application/json
 
 ###
-GET {{TmsApi_HostAddress}}/api/courses
+GET {{TmsApi_HostAddress}}/api/v2/courses
 X-Api-Version: 2.0
+Accept: application/json
+
+###
+POST  {{TmsApi_HostAddress}}/api/grades
 Accept: application/json

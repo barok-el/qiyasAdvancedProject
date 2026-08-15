@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using TmsApi.Application.Enrollments.Commands;
 using TmsApi.Application.Enrollments.Queries;
 using TmsApi.Application.Common.Interface;
+using Microsoft.AspNetCore.SignalR;
+using TmsApi.Application.Hubs;
+using TmsApi.Api.Hubs;
 
 namespace TmsApi.Api.Controllers;
 
@@ -12,7 +15,8 @@ namespace TmsApi.Api.Controllers;
 [ApiVersion("2.0")]
 public class EnrollmentsController(
     IMediator mediator,
-    IEnrollmentService enrollmentService) : ControllerBase
+    IEnrollmentService enrollmentService,
+    IHubContext<TmsHub, ITmsHubClient> hubContext) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct) =>
@@ -48,12 +52,23 @@ public class EnrollmentsController(
             });
     }
 
-    [HttpPost("{id:int}/approve")]
-    public async Task<IActionResult> Approve(int id, CancellationToken ct)
-    {
-        var enrollment = await enrollmentService.ApproveAsync(id, ct);
-        return enrollment is null ? NotFound() : Ok(enrollment);
-    }
+   [HttpPost("{id:int}/approve")]
+public async Task<IActionResult> Approve(
+    int id,
+    CancellationToken ct)
+{
+    var enrollment = await enrollmentService.ApproveAsync(id, ct);
+
+    if (enrollment is null)
+        return NotFound();
+
+    await hubContext.Clients.All
+        .ReceiveEnrollmentStatusUpdated(
+            enrollment.Id.ToString(),
+            enrollment.Status.ToString());
+
+    return Ok(enrollment);
+}
 
     [HttpGet("{studentId}/schedule")]
     public async Task<IActionResult> GetSchedule(
@@ -66,4 +81,5 @@ public class EnrollmentsController(
 
         return Ok(schedule);
     }
+
 }

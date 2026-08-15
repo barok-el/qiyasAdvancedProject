@@ -1,24 +1,33 @@
 import { computed, inject } from '@angular/core';
+
 import {
     signalStore,
     withComputed,
     withMethods,
     patchState,
-    withState,
+    withState
 } from '@ngrx/signals';
 
 import {
     withEntities,
     setAllEntities,
-    updateEntity,
+    updateEntity
 } from '@ngrx/signals/entities';
 
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, concatMap, tap, catchError, EMPTY } from 'rxjs';
+
+import {
+    pipe,
+    concatMap,
+    tap,
+    catchError,
+    EMPTY,
+    switchMap
+} from 'rxjs';
 
 import { EnrollmentService } from '../services/enrollment.service';
+import { LiveSyncService } from '../services/live-sync';
 import { Enrollment } from '../models/enrollment.model';
-
 
 export const EnrollmentStore = signalStore(
     { providedIn: 'root' },
@@ -30,15 +39,40 @@ export const EnrollmentStore = signalStore(
 
     withEntities<Enrollment>(),
 
-    withComputed((store) => ({
+    withComputed(store => ({
         pendingCount: computed(
-            () => store.entities()
-                .filter(e => e.status === 'Pending')
-                .length
-        ),
+            () =>
+                store.entities()
+                    .filter(e => e.status === 'Pending')
+                    .length
+        )
     })),
 
-    withMethods((store, api = inject(EnrollmentService)) => ({
+    withMethods((
+        store,
+        api = inject(EnrollmentService),
+        sync = inject(LiveSyncService)
+    ) => ({
+        listenForLiveUpdates: rxMethod<void>(
+            pipe(
+                tap(() => sync.connect()),
+
+                switchMap(() => sync.events$),
+
+                tap(event => {
+                    console.log('🔥 Store received live update:', event);
+                    patchState(
+                        store,
+                        updateEntity({
+                            id: event.id,
+                            changes: {
+                                status: event.status
+                            }
+                        })
+                    );
+                })
+            )
+        ),
 
         loadEnrollments: rxMethod<void>(
             pipe(
@@ -102,7 +136,8 @@ export const EnrollmentStore = signalStore(
                             );
 
                             patchState(store, {
-                                error: 'Server rejected the approval. Check enrollment constraints.'
+                                error:
+                                    'Server rejected the approval. Check enrollment constraints.'
                             });
 
                             return EMPTY;
@@ -110,7 +145,6 @@ export const EnrollmentStore = signalStore(
                     )
                 )
             )
-        ),
-
+        )
     }))
 );
