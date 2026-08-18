@@ -27,6 +27,7 @@ using TmsApi.Infrastructure.Workers;
 using TmsApi.Api.Hubs;
 using TmsApi.Application.Notifications;
 using TmsApi.Api.Notifications;
+using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +130,8 @@ builder.Services.AddRateLimiter(options =>
             cancellationToken);
     };
 
+    
+
     // ===============================================
     // Transcript Concurrency Policy
     // ===============================================
@@ -166,17 +169,14 @@ builder.Services.AddRateLimiter(options =>
         });
 });
 
-// =======================================================
-// CORS Policy handling
-// =======================================================
+//================================================
+    //XSRF token
+    //================================================
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngular", policy =>
-    policy.WithOrigins("http://localhost:4200")
-    .AllowAnyHeader()
-    .AllowAnyMethod());
-});
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.HeaderName = "X-XSRF-TOKEN";
+    });
 
 // =======================================================
 // MediatR
@@ -377,17 +377,36 @@ builder.Host.UseDefaultServiceProvider(options =>
     options.ValidateOnBuild = true;
 });
 
+//=======================================================
+//angular CORS
+//=======================================================
+
+var allowedOrigins = builder.Configuration
+    .GetSection("AllowedOrigins")
+    .Get<string[]>()
+    ?? ["http://localhost:4200"];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("TmsClient", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+    });
+});
+
 // =======================================================
 // Build
 // =======================================================
 
 var app = builder.Build();
 
-// =======================================================
-// Map SignalR Hub Endpoint
-// =======================================================
 
-app.MapHub<TmsHub>("/hubs/tms");
+
+
 
 // =======================================================
 // Middleware Pipeline
@@ -403,11 +422,47 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+//========================================================
+//Tms-Client CORs
+//========================================================
+
+app.UseCors("TmsClient");
+
 app.UseRateLimiter();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+//=======================================================
+//
+//=======================================================
+
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true ||
+        context.Request.Cookies.ContainsKey("tms_auth"))
+    {
+        var antiforgery =
+            context.RequestServices
+                .GetRequiredService<IAntiforgery>();
+
+        var tokens =
+            antiforgery.GetAndStoreTokens(context);
+
+        context.Response.Cookies.Append(
+            "XSRF-TOKEN",
+            tokens.RequestToken!,
+            new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = !builder.Environment.IsDevelopment(),
+                SameSite = SameSiteMode.Strict
+            });
+    }
+
+    await next(context);
+});
 
 // =======================================================
 // Health Endpoints
@@ -432,7 +487,7 @@ app.MapHealthChecks("/health/ready")
 // CORS
 // =======================================================
 
-app.UseCors("AllowAngular");
+//app.UseCors("AllowAngular");
 
 // =======================================================
 // OpenAPI + Scalar
@@ -470,6 +525,13 @@ app.UseMiddleware<V1DeprecationMiddleware>();
 // =======================================================
 // Controllers
 // =======================================================
+
+// =======================================================
+// Map SignalR Hub Endpoint
+// =======================================================
+
+app.MapHub<TmsHub>("/hubs/tms")
+    .RequireCors("TmsClient");
 
 app.MapControllers();
 

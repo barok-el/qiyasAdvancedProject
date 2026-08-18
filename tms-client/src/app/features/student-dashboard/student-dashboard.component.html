@@ -1,34 +1,70 @@
 <div class="dashboard">
     <h1>Welcome, {{ studentName() }}</h1>
+
     <p>Credits Earned: {{ earnedCredits() }}</p>
+
     <p>Graduation Status: {{ graduationStatus() }}</p>
+
     <p>Pending enrollments: {{ enrollmentStore.pendingCount() }}</p>
+
     <h2>Course Catalog</h2>
 
-    @if (coursesResource.isLoading()) {
-        <div class="spinner">Fetching courses from the server...</div>
-    } @else if (coursesResource.error()) {
-        <div class="error">
-            Could not load courses. Make sure your .NET API is running.
+    @if (courseStore.loading()) {
+
+        <div class="spinner">
+            Fetching courses from the server...
         </div>
-        } @else {
+
+    } @else if (courseStore.error()) {
+
+        <div class="error">
+            {{ courseStore.error() }}
+        </div>
+
+    } @else {
+
         <div class="grid">
-            @for (course of coursesResource.value()!; track course.id) {
-             <tms-course-card [course]="course" (enrollClicked)="handleEnroll($event)" />
+
+            @for (course of courseStore.entities(); track course.id) {
+
+                <div class="course-row">
+
+                    <tms-course-card
+                        [course]="course"
+                        (enrollClicked)="handleEnroll($event)"
+                    />
+
+                    <button
+                        type="button"
+                        (click)="handleDelete(course)"
+                    >
+                        Delete Course
+                    </button>
+
+                </div>
+
+                
+
             } @empty {
-             <p>No courses are available this term.</p>
+
+                <p>No courses are available this term.</p>
+
             }
+
         </div>
     }
 
     @if (selectedCourse(); as picked) {
+
         <p class="selection-hint" role="status">
             Last enrollment request:
             <strong>{{ picked.title }}</strong>
             ({{ picked.code }})
         </p>
+
     }
 
     <h2>Enrollment requests</h2>
+
     <tms-enrollment-list />
 </div>
