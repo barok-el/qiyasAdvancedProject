@@ -13,6 +13,7 @@
     <button
         (click)="enrollClicked.emit(course())"
         [disabled]="course().enrollmentCount >= course().maxCapacity"
+        class="enroll-button"
         >
             Enroll
     </button>

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router'; // RouterLink እንዲሰራ ለመርዳት
-import { CourseDetailComponent } from './course-detail'; // ስሙ ተስተካክሏል
+import { provideRouter } from '@angular/router'; // 
+import { CourseDetailComponent } from './course-detail'; //
 
 describe('CourseDetailComponent', () => {
   let component: CourseDetailComponent;
@@ -8,14 +8,14 @@ describe('CourseDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CourseDetailComponent], // ስሙ ተስተካክሏል
-      providers: [provideRouter([])] // የ RouterLink ስህተትን ለመከላከል
+      imports: [CourseDetailComponent], // 
+      providers: [provideRouter([])] // 
     }).compileComponents();
 
     fixture = TestBed.createComponent(CourseDetailComponent);
     component = fixture.componentInstance;
     
-    // ለ Signal input id መጀመሪያ እሴት (mock value) መስጠት
+    //
     fixture.componentRef.setInput('id', '123'); 
     
     await fixture.whenStable();

@@ -1,0 +1,153 @@
+.dashboard {
+  min-height: 100%;
+  padding: 2rem;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   Dashboard Header
+   ========================================================= */
+
+.dashboard > h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.dashboard > p {
+  margin: 0.35rem 0;
+  color: var(--text-muted);
+}
+
+.dashboard > p:nth-of-type(2) {
+  display: inline-flex;
+  margin-top: 1rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--success-soft);
+  color: #6ee7b7;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* =========================================================
+   Section Headings
+   ========================================================= */
+
+.dashboard h2 {
+  margin: 2.5rem 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* =========================================================
+   Course Grid
+   ========================================================= */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+/* =========================================================
+   Loading
+   ========================================================= */
+
+.spinner {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   Error
+   ========================================================= */
+
+.error {
+  padding: 1rem 1.25rem;
+
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+
+  background: var(--danger-soft);
+  color: #fca5a5;
+
+  font-size: 0.9rem;
+}
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.grid > p {
+  grid-column: 1 / -1;
+
+  padding: 3rem 1rem;
+  text-align: center;
+
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-lg);
+
+  background: rgba(17, 24, 39, 0.5);
+  color: var(--text-muted);
+}
+
+/* =========================================================
+   Enrollment Selection
+   ========================================================= */
+
+.selection-hint {
+  margin-top: 1.5rem !important;
+  padding: 1rem 1.25rem;
+
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+
+  background: var(--primary-soft);
+  color: var(--text-secondary) !important;
+}
+
+.selection-hint strong {
+  color: var(--text-primary);
+}
+
+/*============================================
+Delete button ditinct 
+==============================================*/
+.course-row {
+  position: relative;
+}
+
+.course-row > button {
+  margin-top: 0.75rem;
+
+  background: transparent;
+
+  border: 1px solid rgba(239, 68, 68, 0.4);
+
+  color: #fca5a5;
+}
+
+.course-row > button:hover {
+  background: var(--danger-soft);
+
+  border-color: var(--danger);
+
+  color: #fecaca;
+
+  box-shadow: none;
+}

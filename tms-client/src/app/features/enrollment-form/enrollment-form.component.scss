@@ -1,0 +1,167 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 2.5rem;
+  box-sizing: border-box;
+}
+
+/* Form container */
+form {
+  width: min(600px, 100%);
+  margin: 2rem auto;
+  padding: 2rem;
+
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+
+  color: #e2e8f0;
+}
+
+/* Heading */
+h1,
+h2 {
+  color: #f8fafc;
+  margin-bottom: 1.5rem;
+}
+
+/* Form groups */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+label {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Inputs / selects */
+input,
+select,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 0.75rem 0.9rem;
+
+  background: #0f172a;
+  color: #f8fafc;
+
+  border: 1px solid #475569;
+  border-radius: 8px;
+
+  font-size: 0.95rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Validation */
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+
+.error {
+  margin-top: 0.35rem;
+  color: #fca5a5;
+  font-size: 0.8rem;
+}
+
+/* Submit / Enroll */
+button[type="submit"] {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.8rem 1.25rem;
+
+  background: #4f46e5;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: #6366f1;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+button[type="submit"]:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button[type="submit"]:disabled {
+  background: #475569;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Success message */
+.success {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+
+  background: #064e3b;
+  border: 1px solid #047857;
+  border-radius: 8px;
+
+  color: #a7f3d0;
+}
+
+/* Error message */
+.form-error {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+
+  background: #450a0a;
+  border: 1px solid #991b1b;
+  border-radius: 8px;
+
+  color: #fecaca;
+}
+
+@media (max-width: 650px) {
+  :host {
+    padding: 1.25rem;
+  }
+
+  form {
+    padding: 1.5rem;
+  }
+}

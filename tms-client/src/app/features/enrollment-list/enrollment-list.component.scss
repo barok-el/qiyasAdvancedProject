@@ -1,40 +1,131 @@
-table {
-  width: 100%;
+:host {
+  display: block;
+  margin-top: 1rem;
 }
 
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+thead {
+  background: #131d30;
+}
+
+th {
+  padding: 0.9rem 1rem;
+
+  text-align: left;
+
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 1rem;
+
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+
+  border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+}
+
+tbody tr {
+  transition:
+    background var(--transition),
+    transform var(--transition);
+}
+
+tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================================
+   Status
+   ========================================================= */
+
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.3rem 0.65rem;
+
+  border-radius: 999px;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .status-badge.approved {
-  background: #065f46;
-  color: #a7f3d0;
+  background: var(--success-soft);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .status-badge.pending {
-  background: #78350f;
-  color: #fde68a;
+  background: var(--warning-soft);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .status-badge.rejected {
-  background: #7f1d1d;
+  background: var(--danger-soft);
   color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
+/* =========================================================
+   Buttons
+   ========================================================= */
+
 button {
-  padding: 0.4rem 1rem;
-  border: none;
-  border-radius: 6px;
-  background: #4f46e5;
+  padding: 0.5rem 0.85rem;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+
+  background: var(--primary);
   color: white;
-  cursor: pointer;
-  font-size: 0.85rem;
+
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  transition:
+    background var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
 }
 
 button:hover {
-  background: #4338ca;
+  background: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
