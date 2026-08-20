@@ -11,6 +11,10 @@ using FluentValidation;
 using MediatR;
 using Scalar.AspNetCore;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 using TmsApi.Api.ExceptionHandlers;
 using TmsApi.Api.Filters;
 using TmsApi.Api.Middleware;
@@ -28,6 +32,8 @@ using TmsApi.Api.Hubs;
 using TmsApi.Application.Notifications;
 using TmsApi.Api.Notifications;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Identity;
+using TmsApi.Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -273,14 +279,62 @@ builder.Services.AddScoped<
 // Authentication / Authorization
 // =======================================================
 
-builder.Services.AddAuthentication("Training")
-    .AddScheme<
-        AuthenticationSchemeOptions,
-        TrainingAuthHandler>(
-            "Training",
-            null);
+builder.Services.AddScoped<TokenService>();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer =
+                    builder.Configuration["Jwt:Issuer"],
+
+                ValidAudience =
+                    builder.Configuration["Jwt:Audience"],
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            builder.Configuration["Jwt:Key"]!))
+            };
+    });
 
 builder.Services.AddAuthorization();
+
+// =======================================================
+// ASP.NET Core Identity
+// =======================================================
+
+builder.Services.AddIdentityCore<TmsUser>(options =>
+{
+    // Password Policy
+    options.Password.RequiredLength = 12;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireNonAlphanumeric = true;
+
+    // Brute-Force Lockout Protection
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan =
+        TimeSpan.FromMinutes(15);
+    options.Lockout.AllowedForNewUsers = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<TmsDbContext>();
 
 // =======================================================
 // Application Services
@@ -695,6 +749,29 @@ if (app.Environment.IsDevelopment())
 
     await DataSeeder.SeedAsync(context);
 }
+
+//=======================================================
+//Test password hash
+//=======================================================
+
+var service = new CryptoDemoService();
+
+string hash1 = service.HashUserPassword("Password123!");
+string hash2 = service.HashUserPassword("Password123!");
+
+Console.WriteLine($"Hash 1: {hash1}");
+Console.WriteLine($"Hash 2: {hash2}");
+
+bool match1 = service.VerifyUserPassword(
+    "Password123!",
+    hash1);
+
+bool match2 = service.VerifyUserPassword(
+    "Password123!",
+    hash2);
+
+Console.WriteLine($"Match 1: {match1}");
+Console.WriteLine($"Match 2: {match2}");
 
 // =======================================================
 // Run
