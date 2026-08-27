@@ -5,6 +5,7 @@ using TmsApi.Infrastructure.Identity;
 using TmsApi.Infrastructure.Persistence;
 using TmsApi.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace TmsApi.Api.Controllers;
 
@@ -181,6 +182,7 @@ public class AuthController : ControllerBase
         string Email,
         string Password);
 
+    [EnableRateLimiting("AuthLimiter")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request)
@@ -220,6 +222,8 @@ public class AuthController : ControllerBase
                 detail = "Invalid credentials."
             });
         }
+
+        
 
         // Reset failed attempt counter on successful login
         await _userManager.ResetAccessFailedCountAsync(user);

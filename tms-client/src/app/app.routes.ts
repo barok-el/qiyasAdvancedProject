@@ -1,5 +1,6 @@
 import { Routes } from "@angular/router";
-
+import { LoginComponent } from './features/login/login.component';
+import { UnauthorizedComponent } from "./features/unauthorized/unauthorized.component";
 
 export const routes: Routes = [
     {
@@ -9,6 +10,16 @@ export const routes: Routes = [
         (m) => m.StudentDashboardComponent,
         ),
     },
+    {
+        path: 'login',
+        component: LoginComponent
+    },
+
+    {
+    path: 'unauthorized',
+    component: UnauthorizedComponent
+    },
+
     {
         path: 'courses/:id',
         loadComponent: () => import('./features/course-detail/course-detail')
@@ -32,6 +43,7 @@ export const routes: Routes = [
         import('./features/enrollment-list/enrollment-list.component')
         .then(m => m.EnrollmentListComponent)
     },
+
     {
     path: 'grade-submission',
     loadComponent: () =>

@@ -9,6 +9,7 @@ import {
 
 import { credentialsInterceptor } from './Interceptors/credentials.interceptor';
 import { errorInterceptor } from "./Interceptors/error.interceptor";
+import { jwtInterceptor } from './Interceptors/jwt.interceptor';
 export const appConfig: ApplicationConfig = {
 providers: [
 provideZonelessChangeDetection(),
@@ -16,7 +17,8 @@ provideRouter(routes, withComponentInputBinding()),
 provideHttpClient(
   withInterceptors([
     credentialsInterceptor,
-    errorInterceptor
+    errorInterceptor,
+    jwtInterceptor
   ]),
   withXsrfConfiguration({
     cookieName: 'XSRF-TOKEN',

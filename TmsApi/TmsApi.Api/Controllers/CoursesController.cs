@@ -4,6 +4,9 @@ using TmsApi.Application.Dtos;
 using TmsApi.Application.Common.Interface;
 using MediatR;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
+using TmsApi.Infrastructure.Persistence;
+using TmsApi.Application.DTOs;
 
 namespace TmsApi.Api.Controllers;
 
@@ -16,10 +19,11 @@ namespace TmsApi.Api.Controllers;
     StatusCodes.Status500InternalServerError)]
 public class CoursesController(
     ICourseService courseService,
+    TmsDbContext _context,
+    IAuthorizationService _authorizationService,
     LinkGenerator linkGenerator)
     : ControllerBase
 {
-
 
     // Session 2 Pagination Endpoint
     // Session 2 Pagination Endpoint
@@ -210,6 +214,29 @@ public class CoursesController(
             course);
     }
 
-   
+    // resource based role 
+    
+    
+        
+
+        [Authorize(Roles = "Instructor,Admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto dto)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null) return NotFound();
+            var authResult = await
+            _authorizationService.AuthorizeAsync(User, course, "CanEditCourse");
+            if (!authResult.Succeeded)
+            {
+                return Forbid(); // 403 Forbidden when caller doesn't own the resource
+               
+            }
+            course.Title = dto.Title;
+            await _context.SaveChangesAsync();
+            return NoContent(); 
+        }
+    
+    
 
 }

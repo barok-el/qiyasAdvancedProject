@@ -15,6 +15,7 @@ import { EnrollmentStore } from '../../store/enrollment.store';
 import { CourseStore } from '../../store/course.store';
 
 import { EnrollmentListComponent } from '../enrollment-list/enrollment-list.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -32,7 +33,8 @@ export class StudentDashboardComponent implements OnInit {
 
   readonly enrollmentStore = inject(EnrollmentStore);
   readonly courseStore = inject(CourseStore);
-
+  auth = inject(AuthService);
+  
   studentName = signal('Liya Kebede');
 
   earnedCredits = signal(45);
