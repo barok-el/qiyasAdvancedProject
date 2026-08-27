@@ -503,9 +503,13 @@ app.Use(async (context, next) =>
         "Referrer-Policy",
         "strict-origin-when-cross-origin");
 
-    context.Response.Headers.Append(
-        "Content-Security-Policy",
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';");
+     // Don't apply the CSP to Scalar UI
+    if (!context.Request.Path.StartsWithSegments("/scalar"))
+    {
+        context.Response.Headers.Append(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';");
+    }
 
     await next();
 });
@@ -586,9 +590,7 @@ app.MapHealthChecks("/health/live")
 app.MapHealthChecks("/health/ready")
     .DisableRateLimiting();
 
-// =======================================================
-// CORS
-// =======================================================
+
 
 //app.UseCors("AllowAngular");
 

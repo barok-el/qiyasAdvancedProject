@@ -19,11 +19,14 @@ namespace TmsApi.Api.Controllers;
     StatusCodes.Status500InternalServerError)]
 public class CoursesController(
     ICourseService courseService,
-    TmsDbContext _context,
-    IAuthorizationService _authorizationService,
+    TmsDbContext context,
+    IAuthorizationService authorizationService,
     LinkGenerator linkGenerator)
     : ControllerBase
 {
+    private readonly TmsDbContext _context = context;
+    private readonly IAuthorizationService _authorizationService =
+        authorizationService;
 
     // Session 2 Pagination Endpoint
     // Session 2 Pagination Endpoint

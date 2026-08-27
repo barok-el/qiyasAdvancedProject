@@ -18,16 +18,18 @@ public class CourseInstructorHandler : AuthorizationHandler<CourseInstructorRequ
         if (isAdmin)
             {
                 context.Succeed(requirement);
-                //return Task.CompletedTask;
+                return Task.CompletedTask;
             }
         
         
         // Instructors can only manage courses where InstructorId
         //matches their User ID
-        /*if (isInstructor && resource.InstructorId?.ToString == userId)
+        if (isInstructor && 
+            userId != null && 
+            resource.InstructorId == userId)
         {
             context.Succeed(requirement);
-        }*/
+        }
         return Task.CompletedTask;
     }
 }
