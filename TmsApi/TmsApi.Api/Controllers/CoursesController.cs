@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using TmsApi.Application.Dtos;
@@ -7,11 +8,16 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using TmsApi.Infrastructure.Persistence;
 using TmsApi.Application.DTOs;
+using Microsoft.AspNetCore.Identity;
+using TmsApi.Infrastructure.Identity;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace TmsApi.Api.Controllers;
 
 [ApiController]
-[Route("api/courses")]
+[Route("api/v{version:apiVersion}/courses")]
+[ApiVersion("2.0")]
 [Tags("Courses")]
 [Produces("application/json")]
 [ProducesResponseType(
@@ -21,12 +27,14 @@ public class CoursesController(
     ICourseService courseService,
     TmsDbContext context,
     IAuthorizationService authorizationService,
-    LinkGenerator linkGenerator)
+    LinkGenerator linkGenerator,
+    UserManager<TmsUser> userManager)
     : ControllerBase
 {
     private readonly TmsDbContext _context = context;
     private readonly IAuthorizationService _authorizationService =
         authorizationService;
+    private readonly UserManager<TmsUser> _userManager = userManager;
 
     // Session 2 Pagination Endpoint
     // Session 2 Pagination Endpoint
@@ -49,6 +57,17 @@ public class CoursesController(
 
             return Ok(result);
         }
+
+    [Authorize(Roles = "Instructor")]
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetMyCourses(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Forbid();
+
+        return Ok(await courseService.GetByInstructorIdAsync(userId, ct));
+    }
 
 
 
@@ -90,18 +109,6 @@ public class CoursesController(
 
 
 
-        var enrollmentsLink =
-            linkGenerator.GetPathByAction(
-                HttpContext,
-                action: "GetEnrollments",
-                controller: "Enrollments",
-                values: new
-                {
-                    courseId = id
-                });
-
-
-
         var links =
             new List<LinkDto>
             {
@@ -109,37 +116,19 @@ public class CoursesController(
                     selfLink!,
                     "self",
                     "GET"
-                ),
-
-                new(
-                    selfLink!,
-                    "update",
-                    "PUT"
-                ),
-
-                new(
-                    selfLink!,
-                    "delete",
-                    "DELETE"
-                ),
-
-                new(
-                    enrollmentsLink!,
-                    "enrollments",
-                    "GET"
                 )
             };
 
-
-
-        if (course.EnrollmentCount < course.MaxCapacity)
+        var managedCourse = await _context.Courses.FindAsync([id], ct);
+        if (managedCourse is not null &&
+            (await _authorizationService.AuthorizeAsync(User, managedCourse, "CanEditCourse")).Succeeded)
         {
-            links.Add(
-                new LinkDto(
-                    enrollmentsLink!,
-                    "enroll",
-                    "POST"
-                ));
+            links.Add(new LinkDto(selfLink!, "update", "PUT"));
+        }
+
+        if (User.IsInRole("Admin"))
+        {
+            links.Add(new LinkDto(selfLink!, "delete", "DELETE"));
         }
 
 
@@ -170,6 +159,7 @@ public class CoursesController(
 
 
     // Session 1 Create Course Endpoint
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ProducesResponseType(
         typeof(CourseResponseDto),
@@ -239,6 +229,74 @@ public class CoursesController(
             await _context.SaveChangesAsync();
             return NoContent(); 
         }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id:int}/instructor")]
+    public async Task<IActionResult> AssignInstructor(
+        int id,
+        [FromBody] AssignCourseInstructorRequest request)
+    {
+        var course = await _context.Courses.FindAsync(id);
+
+        if (course is null)
+        {
+            return NotFound();
+        }
+
+        var instructor = await _userManager.FindByIdAsync(request.InstructorId);
+
+        if (instructor is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Instructor not found",
+                Detail = "The specified user does not exist.",
+                Status = StatusCodes.Status404NotFound
+            });
+        }
+
+        if (!await _userManager.IsInRoleAsync(instructor, "Instructor"))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid instructor",
+                Detail = "The specified user does not have the Instructor role.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        course.InstructorId = instructor.Id;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteCourse(int id, CancellationToken ct)
+    {
+        var course = await _context.Courses
+            .Include(item => item.Enrollments)
+            .FirstOrDefaultAsync(item => item.Id == id, ct);
+
+        if (course is null)
+            return NotFound();
+
+        if (course.Enrollments.Count > 0)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Course cannot be deleted",
+                Detail = "Courses with enrollment records cannot be deleted.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        _context.Courses.Remove(course);
+        await _context.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
     
     
 

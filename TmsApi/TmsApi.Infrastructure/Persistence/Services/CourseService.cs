@@ -224,6 +224,21 @@ public class CourseService(
                 c.Enrollments.Count))
             .ToListAsync(ct);
     }
+
+    public async Task<IEnumerable<CourseResponseDto>> GetByInstructorIdAsync(
+        string instructorId,
+        CancellationToken ct) =>
+        await context.Courses
+            .AsNoTracking()
+            .Where(course => course.InstructorId == instructorId)
+            .OrderBy(course => course.Title)
+            .Select(course => new CourseResponseDto(
+                course.Id,
+                course.Code,
+                course.Title,
+                course.MaxCapacity,
+                course.Enrollments.Count))
+            .ToListAsync(ct);
     public async Task UpdateAsync(
     UpdateCourseCommand command,
     CancellationToken ct)

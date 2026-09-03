@@ -1,0 +1,33 @@
+<main class="admin-workspace">
+  <header class="admin-header">
+    <div>
+      <p class="eyebrow">Training management system</p>
+      <h1>TMS Admin Dashboard</h1>
+      <p>Welcome{{ auth.currentUser()?.firstName ? ', ' + auth.currentUser()?.firstName : '' }}. Monitor training operations and access management tools.</p>
+    </div>
+    <div class="header-actions">
+      <span class="role-badge">Administrator</span>
+      <button type="button" (click)="logout()">Log out</button>
+    </div>
+  </header>
+
+  <section class="overview-grid" aria-label="System overview">
+    <article class="overview-card"><strong>{{ courseStore.entities().length }}</strong><span>Total courses</span></article>
+    <article class="overview-card"><strong>{{ studentCount() }}</strong><span>Students enrolled</span></article>
+    <article class="overview-card"><strong>{{ enrollmentStore.entities().length }}</strong><span>Total enrollments</span></article>
+    <article class="overview-card pending"><strong>{{ enrollmentStore.pendingCount() }}</strong><span>Pending actions</span></article>
+  </section>
+
+  <section class="management-section">
+    <div>
+      <h2>Administration</h2>
+      <p>Use the existing API-backed tools to review course and enrollment activity.</p>
+    </div>
+    <div class="management-grid">
+      <a routerLink="/course-management" class="management-card"><h3>Course management</h3><p>Create, edit, delete, and assign instructors.</p><span>Open courses →</span></a>
+      <a routerLink="/enrollments" class="management-card"><h3>Enrollment management</h3><p>Review enrollment records and pending approvals.</p><span>Open enrollments →</span></a>
+      <a routerLink="/grade-submission" class="management-card"><h3>Grade management</h3><p>Submit grades through the existing grade endpoint.</p><span>Open grades →</span></a>
+      <article class="management-card unavailable"><h3>User and role management</h3><p>The current backend does not expose a user-management endpoint.</p><span>Not available yet</span></article>
+    </div>
+  </section>
+</main>

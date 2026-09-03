@@ -250,6 +250,8 @@ namespace TmsApi.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
+                    b.HasIndex("InstructorId");
+
                     b.ToTable("Courses");
                 });
 
@@ -316,6 +318,8 @@ namespace TmsApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("RefreshTokens");
                 });
 
@@ -343,7 +347,13 @@ namespace TmsApi.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Students");
                 });
@@ -512,6 +522,14 @@ namespace TmsApi.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("TmsApi.Domain.Entities.Course", b =>
+                {
+                    b.HasOne("TmsApi.Infrastructure.Identity.TmsUser", null)
+                        .WithMany()
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("TmsApi.Domain.Entities.Enrollment", b =>
                 {
                     b.HasOne("TmsApi.Domain.Entities.Course", "Course")
@@ -529,6 +547,23 @@ namespace TmsApi.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("TmsApi.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("TmsApi.Infrastructure.Identity.TmsUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TmsApi.Domain.Entities.Student", b =>
+                {
+                    b.HasOne("TmsApi.Infrastructure.Identity.TmsUser", null)
+                        .WithOne()
+                        .HasForeignKey("TmsApi.Domain.Entities.Student", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("TmsApi.Domain.Entities.Course", b =>

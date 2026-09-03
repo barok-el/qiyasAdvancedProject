@@ -21,5 +21,23 @@ public class TmsDbContext(DbContextOptions<TmsDbContext> options)
 
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(TmsDbContext).Assembly);
+
+        modelBuilder.Entity<Student>()
+            .HasOne<TmsUser>()
+            .WithOne()
+            .HasForeignKey<Student>(student => student.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Course>()
+            .HasOne<TmsUser>()
+            .WithMany()
+            .HasForeignKey(course => course.InstructorId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne<TmsUser>()
+            .WithMany()
+            .HasForeignKey(token => token.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

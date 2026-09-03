@@ -1,12 +1,22 @@
+chat
+<main class="dashboard">
+    <header class="dashboard-header">
+        <div>
+            <p class="eyebrow">Training management</p>
+            <h1>Welcome back, {{ studentName() }}</h1>
+            <p>Explore available courses and keep track of your enrollment activity.</p>
+        </div>
+        <div class="header-actions">
+            <span class="role-badge">Student</span>
+            <button type="button" class="secondary-button" (click)="logout()">Log out</button>
+        </div>
+    </header>
 
-<div class="dashboard">
-    <h1>Welcome, {{ studentName() }}</h1>
-
-    <p>Credits Earned: {{ earnedCredits() }}</p>
-
-    <p>Graduation Status: {{ graduationStatus() }}</p>
-
-    <p>Pending enrollments: {{ enrollmentStore.pendingCount() }}</p>
+    <section class="summary-row">
+        <article><strong>{{ earnedCredits() }}</strong><span>Credits earned</span></article>
+        <article><strong>{{ enrollmentStore.pendingCount() }}</strong><span>Pending enrollments</span></article>
+        <article><strong>{{ graduationStatus() }}</strong><span>Graduation status</span></article>
+    </section>
 
     <h2>Course Catalog</h2>
 
@@ -69,7 +79,16 @@
 
     }
 
-    <h2>Enrollment requests</h2>
+    <h2>My Enrollments</h2>
 
-    <tms-enrollment-list />
-</div>
+    <tms-enrollment-list [management]="false" title="My Enrollments" />
+
+    <section class="grades-section">
+        <h2>My Grades</h2>
+        @for (grade of grades(); track grade.enrollmentId) {
+            <p><strong>{{ grade.courseCode }}</strong> — {{ grade.courseName }}: {{ grade.grade ?? 'Not graded' }}</p>
+        } @empty {
+            <p>No grade records are available yet.</p>
+        }
+    </section>
+</main>

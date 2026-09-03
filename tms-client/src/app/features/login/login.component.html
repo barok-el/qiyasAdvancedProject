@@ -2,6 +2,7 @@
   <div class="login-card">
 
     <div class="login-header">
+      <div class="brand-mark" aria-hidden="true">T</div>
       <h1>TMS</h1>
       <h2>Welcome Back</h2>
       <p>Sign in to access the Training Management System.</p>
@@ -33,13 +34,23 @@
       <div class="form-group">
         <label for="password">Password</label>
 
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="Enter your password"
-          autocomplete="current-password"
-        />
+        <div class="password-field">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          >
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
 
         @if (
           loginForm.controls.password.touched &&
@@ -52,8 +63,14 @@
       </div>
 
       @if (errorMessage()) {
-        <div class="login-error">
+        <div class="login-error" role="alert">
           {{ errorMessage() }}
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="login-success" role="status">
+          {{ successMessage() }}
         </div>
       }
 
@@ -68,6 +85,11 @@
           Sign In
         }
       </button>
+
+      <div class="auth-links">
+        <a routerLink="/forgot-password">Forgot password?</a>
+        <a routerLink="/register">Create an account</a>
+      </div>
 
     </form>
 

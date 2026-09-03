@@ -1,10 +1,4 @@
-import {
-  Component,
-  signal,
-  inject,
-  computed,
-  OnInit
-} from '@angular/core';
+import { Component, signal, inject, computed, OnInit } from '@angular/core';
 
 import { Router } from '@angular/router';
 
@@ -16,6 +10,7 @@ import { CourseStore } from '../../store/course.store';
 
 import { EnrollmentListComponent } from '../enrollment-list/enrollment-list.component';
 import { AuthService } from '../../services/auth.service';
+import { GradeRecord, GradeService } from '../../services/grade.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -34,8 +29,12 @@ export class StudentDashboardComponent implements OnInit {
   readonly enrollmentStore = inject(EnrollmentStore);
   readonly courseStore = inject(CourseStore);
   auth = inject(AuthService);
+  private readonly gradeService = inject(GradeService);
+  readonly grades = signal<GradeRecord[]>([]);
   
-  studentName = signal('Liya Kebede');
+  studentName = computed(() =>
+    this.auth.currentUser()?.firstName || 'Student'
+  );
 
   earnedCredits = signal(45);
 
@@ -49,7 +48,8 @@ export class StudentDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.courseStore.loadCourses();
-    this.enrollmentStore.loadEnrollments();
+    this.enrollmentStore.loadEnrollments('student');
+    this.gradeService.getMine().subscribe({ next: grades => this.grades.set(grades) });
   }
 
   handleEnroll(course: Course) {
@@ -62,7 +62,7 @@ export class StudentDashboardComponent implements OnInit {
 
     this.router.navigate(['/enroll'], {
       queryParams: {
-        courseId: course.id
+        courseCode: course.code
       }
     });
   }
@@ -70,4 +70,10 @@ export class StudentDashboardComponent implements OnInit {
   handleDelete(course: Course) {
     this.courseStore.deleteCourse(course.id);
   }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
+  }
+
 }

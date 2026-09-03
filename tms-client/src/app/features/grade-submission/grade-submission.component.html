@@ -3,26 +3,18 @@
 <h3>Instructor Midterm Grading</h3>
 
 <form [formGroup]="gradeForm" (ngSubmit)="onSubmit()">
-    <label for="studentId">Student ID</label>
-    <input
-        id="studentId"
-        type="number"
-        formControlName="studentId"
-    />
+    <label for="enrollmentId">Enrollment</label>
+    <select id="enrollmentId" formControlName="enrollmentId">
+        <option [ngValue]="0">Select an enrollment</option>
+        @for (record of records(); track record.enrollmentId) {
+            <option [ngValue]="record.enrollmentId">
+                {{ record.courseCode }} — {{ record.courseName }} — {{ record.studentName }}
+            </option>
+        }
+    </select>
 
-    @if (gradeForm.controls.studentId.hasError('required')) {
-        <p>Student ID is required</p>
-    }
-
-    <label for="courseId">Course ID</label>
-    <input
-        id="courseId"
-        type="number"
-        formControlName="courseId"
-    />
-
-    @if (gradeForm.controls.courseId.hasError('required')) {
-        <p>Course ID is required</p>
+    @if (gradeForm.controls.enrollmentId.hasError('required') || gradeForm.controls.enrollmentId.hasError('min')) {
+        <p>Select an enrollment.</p>
     }
 
     <label for="score">Score (0-100)</label>

@@ -110,6 +110,45 @@ public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(
                 e.EnrolledAt))
             .ToListAsync(ct);
 
+    public async Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListByStudentIdAsync(
+        int studentId,
+        CancellationToken ct) =>
+        await context.Enrollments
+            .AsNoTracking()
+            .Where(e => e.StudentId == studentId)
+            .OrderByDescending(e => e.EnrolledAt)
+            .Select(e => new EnrollmentListItemDto(
+                e.Id,
+                e.StudentId,
+                e.Student.Name,
+                e.CourseId,
+                e.Course.Title,
+                e.Status,
+                e.EnrolledAt))
+            .ToListAsync(ct);
+
+    public async Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListForInstructorAsync(
+        string instructorId,
+        CancellationToken ct) =>
+        await context.Enrollments
+            .AsNoTracking()
+            .Where(e => e.Course.InstructorId == instructorId)
+            .OrderByDescending(e => e.EnrolledAt)
+            .Select(e => new EnrollmentListItemDto(
+                e.Id,
+                e.StudentId,
+                e.Student.Name,
+                e.CourseId,
+                e.Course.Title,
+                e.Status,
+                e.EnrolledAt))
+            .ToListAsync(ct);
+
+    public Task<Enrollment?> GetForManagementAsync(int id, CancellationToken ct) =>
+        context.Enrollments
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public async Task<EnrollmentListItemDto?> ApproveAsync(
         int id,
         CancellationToken ct)
@@ -123,6 +162,31 @@ public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(
             return null;
 
         enrollment.Status = "Approved";
+        await context.SaveChangesAsync(ct);
+
+        return new EnrollmentListItemDto(
+            enrollment.Id,
+            enrollment.StudentId,
+            enrollment.Student.Name,
+            enrollment.CourseId,
+            enrollment.Course.Title,
+            enrollment.Status,
+            enrollment.EnrolledAt);
+    }
+
+    public async Task<EnrollmentListItemDto?> RejectAsync(
+        int id,
+        CancellationToken ct)
+    {
+        var enrollment = await context.Enrollments
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+        if (enrollment is null)
+            return null;
+
+        enrollment.Status = "Rejected";
         await context.SaveChangesAsync(ct);
 
         return new EnrollmentListItemDto(

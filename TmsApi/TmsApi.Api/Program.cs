@@ -406,17 +406,15 @@ builder.Services
     .AddApiVersioning(options =>
     {
         options.DefaultApiVersion =
-            new ApiVersion(1, 0);
+            new ApiVersion(2, 0);
 
         options.AssumeDefaultVersionWhenUnspecified =
-            true;
+            false;
 
         options.ReportApiVersions = true;
 
         options.ApiVersionReader =
-            ApiVersionReader.Combine(
-                new UrlSegmentApiVersionReader(),
-                new HeaderApiVersionReader("X-Api-Version"));
+            new UrlSegmentApiVersionReader();
     })
     .AddApiExplorer(options =>
     {
@@ -650,7 +648,10 @@ using (var scope = app.Services.CreateScope())
         scope.ServiceProvider
             .GetRequiredService<TmsDbContext>();
 
-    context.Database.Migrate();
+    if (!app.Environment.IsEnvironment("Testing") && context.Database.IsRelational())
+    {
+        context.Database.Migrate();
+    }
 
     if (!context.Students.Any())
     {

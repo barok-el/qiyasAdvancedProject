@@ -12,6 +12,9 @@ request, CancellationToken ct);
 Task<Course?> GetByCodeAsync(string courseCode, CancellationToken ct);
 Task<IEnumerable<CourseResponseDto>> GetAllAsync(
     CancellationToken ct);
+Task<IEnumerable<CourseResponseDto>> GetByInstructorIdAsync(
+    string instructorId,
+    CancellationToken ct);
 Task UpdateAsync(
     UpdateCourseCommand command,
     CancellationToken ct);

@@ -74,7 +74,7 @@ export const EnrollmentStore = signalStore(
             )
         ),
 
-        loadEnrollments: rxMethod<void>(
+        loadEnrollments: rxMethod<'admin' | 'student' | 'instructor'>(
             pipe(
                 tap(() =>
                     patchState(store, {
@@ -83,8 +83,14 @@ export const EnrollmentStore = signalStore(
                     })
                 ),
 
-                concatMap(() =>
-                    api.getAll().pipe(
+                concatMap(scope => {
+                    const request = scope === 'student'
+                        ? api.getMine()
+                        : scope === 'instructor'
+                            ? api.getForInstructor()
+                            : api.getAll();
+
+                    return request.pipe(
                         tap(rows =>
                             patchState(
                                 store,
@@ -103,8 +109,8 @@ export const EnrollmentStore = signalStore(
 
                             return EMPTY;
                         })
-                    )
-                )
+                    );
+                })
             )
         ),
 
@@ -144,6 +150,21 @@ export const EnrollmentStore = signalStore(
                         })
                     )
                 )
+            )
+        ),
+
+        rejectEnrollment: rxMethod<number>(
+            pipe(
+                concatMap(id => api.reject(id).pipe(
+                    tap(enrollment => patchState(store, updateEntity({
+                        id,
+                        changes: { status: enrollment.status }
+                    }))),
+                    catchError(err => {
+                        patchState(store, { error: err.message });
+                        return EMPTY;
+                    })
+                ))
             )
         )
     }))

@@ -1,14 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
     FormBuilder,
     ReactiveFormsModule,
     Validators
 } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { exhaustMap } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-import { GradePayload, GradeService } from '../../services/grade.service';
+import { GradeRecord, GradeService } from '../../services/grade.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'tms-grade-submission',
@@ -18,18 +15,16 @@ import { GradePayload, GradeService } from '../../services/grade.service';
     ],
     templateUrl: './grade-submission.component.html'
 })
-export class GradeSubmissionComponent {
+export class GradeSubmissionComponent implements OnInit {
     private api = inject(GradeService);
     private fb = inject(FormBuilder);
+    private auth = inject(AuthService);
+    readonly records = signal<GradeRecord[]>([]);
 
     // Reactive Form definition with initial model values and validators
     gradeForm = this.fb.group({
-        studentId: [
-            101,
-            [Validators.required, Validators.min(1)]
-        ],
-        courseId: [
-            302,
+        enrollmentId: [
+            0,
             [Validators.required, Validators.min(1)]
         ],
         score: [
@@ -45,55 +40,35 @@ export class GradeSubmissionComponent {
     isSubmitting = false;
     submissionStatus = '';
 
-    // A Subject is a manual event stream — template clicks push payloads
-    // into it
-    private submitClick$ = new Subject<GradePayload>();
+    ngOnInit(): void {
+        const request = this.auth.hasRole('Admin')
+            ? this.api.getAll()
+            : this.api.getForInstructor();
 
-    constructor() {
-        this.submitClick$
-            .pipe(
-                // exhaustMap: while the inner HTTP observable is active,
-                // ALL new emissions from submitClick$ are silently dropped.
-                // Dawit can click 50 times — only ONE POST request fires.
-                exhaustMap(payload => {
-                    this.isSubmitting = true;
-                    this.submissionStatus =
-                        'Submitting grade to server...';
-
-                    return this.api.postGrade(payload);
-                }),
-
-                // takeUntilDestroyed: automatically unsubscribes when Angular
-                // destroys this component, preventing memory leaks.
-                // Placed inside constructor to inherit the active injection
-                // context.
-                takeUntilDestroyed()
-            )
-            .subscribe({
-                next: result => {
-                    this.isSubmitting = false;
-                    this.submissionStatus =
-                        `Grade saved successfully! Record ID: ${result.id}`;
-                },
-
-                error: err => {
-                    this.isSubmitting = false;
-                    this.submissionStatus =
-                        `Submission failed: ${err.message || 'Server error'}`;
-                }
-            });
+        request.subscribe({
+            next: records => this.records.set(records),
+            error: () => this.submissionStatus = 'Grade records could not be loaded.'
+        });
     }
 
-    // The template form submit handler pushes valid values into the
-    // protected stream
     onSubmit() {
         if (this.gradeForm.valid) {
             const rawValue = this.gradeForm.getRawValue();
-
-            this.submitClick$.next({
-                studentId: Number(rawValue.studentId),
-                courseId: Number(rawValue.courseId),
+            this.isSubmitting = true;
+            this.submissionStatus = 'Submitting grade to server...';
+            this.api.postGrade({
+                enrollmentId: Number(rawValue.enrollmentId),
                 score: Number(rawValue.score)
+            }).subscribe({
+                next: result => {
+                    this.isSubmitting = false;
+                    this.submissionStatus = `Grade saved successfully! Record ID: ${result.id}`;
+                    this.ngOnInit();
+                },
+                error: err => {
+                    this.isSubmitting = false;
+                    this.submissionStatus = `Submission failed: ${err.message || 'Server error'}`;
+                }
             });
         }
     }

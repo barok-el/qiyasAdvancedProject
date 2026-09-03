@@ -1,31 +1,80 @@
-<div class="dashboard-header">
-  <h1>Instructor Command Center</h1>
+<main class="workspace">
+  <header class="workspace-header">
+    <div>
+      <p class="eyebrow">Training management</p>
+      <h1>Welcome back{{ auth.currentUser()?.firstName ? ', ' + auth.currentUser()?.firstName : '' }}</h1>
+      <p>Review course activity and respond to enrollment requests.</p>
+    </div>
+    <div class="header-actions">
+      <span class="role-badge">Instructor</span>
+      <button type="button" class="secondary-button" (click)="logout()">Log out</button>
+    </div>
+  </header>
 
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <span class="kpi-value">{{ store.entities().length }}</span>
-      <span class="kpi-label">Total Enrollments</span>
+  <section class="kpi-row" aria-label="Instructor summary">
+    <article class="kpi-card">
+      <span class="kpi-value">{{ courseStore.entities().length }}</span>
+      <span class="kpi-label">Available courses</span>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-value">{{ enrollmentStore.entities().length }}</span>
+      <span class="kpi-label">Total enrollments</span>
+    </article>
+    <article class="kpi-card pending">
+      <span class="kpi-value">{{ enrollmentStore.pendingCount() }}</span>
+      <span class="kpi-label">Pending requests</span>
+    </article>
+    <article class="kpi-card">
+      <span class="kpi-value">{{ studentCount() }}</span>
+      <span class="kpi-label">Enrolled students</span>
+    </article>
+  </section>
+
+  <section class="content-section">
+    <div class="section-heading">
+      <div>
+        <h2>Course management</h2>
+        <p>The current API exposes the course catalogue. Edit requests remain enforced by backend ownership authorization.</p>
+      </div>
+      <a routerLink="/course-management" class="text-link">Manage my courses</a>
     </div>
 
-    <div class="kpi-card pending">
-      <span class="kpi-value">{{ store.pendingCount() }}</span>
-      <span class="kpi-label">Pending Approval</span>
-    </div>
-  </div>
-</div>
+    @if (courseStore.loading()) {
+      <div class="state-card">Loading courses…</div>
+    } @else if (courseStore.error()) {
+      <div class="state-card error-state">{{ courseStore.error() }}</div>
+    } @else {
+      <div class="course-grid">
+        @for (course of courseStore.entities(); track course.id) {
+          <article class="course-card">
+            <p class="course-code">{{ course.code }}</p>
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.enrollmentCount }} of {{ course.maxCapacity }} seats filled</p>
+            <a [routerLink]="['/courses', course.id]" class="text-link">View course</a>
+          </article>
+        } @empty {
+          <div class="state-card">No courses are available yet.</div>
+        }
+      </div>
+    }
+  </section>
 
-<div class="chart-section">
-  @defer (on viewport; prefetch on idle(500)) {
-    <tms-analytics-chart [data]="store.entities()" />
-  } @placeholder {
-    <div class="skeleton-chart">
-      Scroll down to view analytics...
+  <section class="content-section chart-section">
+    <div class="section-heading">
+      <div>
+        <h2>Enrollment activity</h2>
+        <p>Live enrollment data from the existing enrollment service.</p>
+      </div>
     </div>
-  } @loading (minimum 500ms) {
-    <div class="spinner">
-      Downloading chart engine...
-    </div>
-  } @error {
-    <p>Failed to load chart. Check your connection.</p>
-  }
-</div>
+    @defer (on viewport; prefetch on idle(500)) {
+      <tms-analytics-chart [data]="enrollmentStore.entities()" />
+    } @placeholder {
+      <div class="state-card">Scroll to load enrollment analytics.</div>
+    } @loading (minimum 500ms) {
+      <div class="state-card">Loading analytics…</div>
+    } @error {
+      <div class="state-card error-state">Analytics could not be loaded.</div>
+    }
+  </section>
+
+</main>

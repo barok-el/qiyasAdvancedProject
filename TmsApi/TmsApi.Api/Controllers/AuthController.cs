@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TmsApi.Domain.Entities;
@@ -10,7 +11,8 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace TmsApi.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("2.0")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<TmsUser> _userManager;
@@ -36,9 +38,13 @@ public class AuthController : ControllerBase
         string Email,
         string Password,
         string FirstName,
-        string LastName,
-        string Role);
+        string LastName);
     public record RefreshRequest(string RefreshToken);
+    public record ForgotPasswordRequest(string Email);
+    public record ResetPasswordRequest(
+        string Email,
+        string Token,
+        string NewPassword);
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(
@@ -135,48 +141,154 @@ public class AuthController : ControllerBase
 
             if (existingUser != null)
             {
-                // Prevent account enumeration
-                return Ok(new
+                return Conflict(new ProblemDetails
                 {
-                    message = "Registration request received."
+                    Title = "Account already exists",
+                    Detail = "An account is already registered with this email address.",
+                    Status = StatusCodes.Status409Conflict
                 });
             }
 
-            var user = new TmsUser
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                UserName = request.Email,
-                Email = request.Email,
-                FirstName = request.FirstName,
-                LastName = request.LastName
-            };
+                var user = new TmsUser
+                {
+                    UserName = request.Email,
+                    Email = request.Email,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName
+                };
 
-            var result =
-                await _userManager.CreateAsync(user, request.Password);
+                var result =
+                    await _userManager.CreateAsync(user, request.Password);
 
-            if (!result.Succeeded)
-            {
-                var errors = result.Errors
-                    .Select(e => e.Description);
+                if (!result.Succeeded)
+                {
+                    var errors = result.Errors
+                        .Select(e => e.Description);
 
-                return BadRequest(new { errors });
+                    return BadRequest(new { errors });
+                }
+
+                const string publicRegistrationRole = "Student";
+
+                if (!await _roleManager.RoleExistsAsync(publicRegistrationRole))
+                {
+                    var roleResult = await _roleManager.CreateAsync(
+                        new IdentityRole(publicRegistrationRole));
+
+                    if (!roleResult.Succeeded)
+                    {
+                        return BadRequest(new
+                        {
+                            errors = roleResult.Errors.Select(error => error.Description)
+                        });
+                    }
+                }
+
+                var assignmentResult = await _userManager.AddToRoleAsync(
+                    user,
+                    publicRegistrationRole);
+
+                if (!assignmentResult.Succeeded)
+                {
+                    return BadRequest(new
+                    {
+                        errors = assignmentResult.Errors.Select(error => error.Description)
+                    });
+                }
+
+                _context.Students.Add(new Student
+                {
+                    UserId = user.Id,
+                    RegistrationNumber = $"TMS-{Guid.NewGuid():N}"[..20],
+                    Name = $"{user.FirstName} {user.LastName}".Trim(),
+                    GPA = 0m,
+                    IsActive = true
+                });
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            // Ensure requested role exists
-            if (!await _roleManager.RoleExistsAsync(request.Role))
+            catch
             {
-                await _roleManager.CreateAsync(
-                    new IdentityRole(request.Role));
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            await _userManager.AddToRoleAsync(
-                user,
-                request.Role);
 
             return Ok(new
             {
                 message = "Registration successful."
             });
         }
+
+    [EnableRateLimiting("AuthLimiter")]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user is not null)
+        {
+            _ = await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        return Accepted(new
+        {
+            message = "If an account exists for this email address, password reset instructions will be sent."
+        });
+    }
+
+    [EnableRateLimiting("AuthLimiter")]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user is null)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Password reset failed",
+                Detail = "The password reset request is invalid or has expired.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            request.Token,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                errors = result.Errors.Select(error => error.Description)
+            });
+        }
+
+        var activeRefreshTokens = await _context.RefreshTokens
+            .Where(token => token.UserId == user.Id && !token.IsRevoked)
+            .ToListAsync();
+
+        foreach (var refreshToken in activeRefreshTokens)
+        {
+            refreshToken.IsRevoked = true;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Password reset successfully. Please sign in with your new password."
+        });
+    }
 
     public record LoginRequest(
         string Email,

@@ -67,6 +67,18 @@ export const CourseStore = signalStore(
         });
       },
 
+      loadMyCourses() {
+        patchState(store, { loading: true, error: null });
+
+        courseService.getMine().subscribe({
+          next: courses => patchState(store, setAllEntities(courses), { loading: false }),
+          error: () => patchState(store, {
+            loading: false,
+            error: 'Failed to load your assigned courses.'
+          })
+        });
+      },
+
       deleteCourse(id: number) {
 
         // 1. Snapshot BEFORE deleting

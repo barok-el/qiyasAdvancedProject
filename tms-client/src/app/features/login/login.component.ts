@@ -5,13 +5,14 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -22,6 +23,12 @@ export class LoginComponent {
 
   loading = signal(false);
   errorMessage = signal('');
+  showPassword = signal(false);
+  successMessage = signal(
+    history.state?.registrationSuccess
+      ? 'Account created successfully. You can now sign in.'
+      : ''
+  );
 
   loginForm = this.fb.nonNullable.group({
     email: [
@@ -52,7 +59,9 @@ export class LoginComponent {
         this.loginForm.getRawValue()
       );
 
-      await this.router.navigate(['/dashboard']);
+      await this.router.navigateByUrl(
+        this.authService.getDefaultRoute()
+      );
     } catch (error: any) {
       console.error('Login failed:', error);
 

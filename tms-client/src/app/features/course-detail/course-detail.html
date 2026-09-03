@@ -1,7 +1,17 @@
-<h1>Course Detail</h1>
-<p>Course ID: {{id() }}</p>
-<a routerLink="/dashboard">Back to Dashboard</a>
-<h3>
-    <a [routerLink]="['/courses', course().id]"> {{ course().title }} </a>
-    ({{ course().code }})
-</h3>
+<main class="course-detail-page">
+  <a routerLink="/dashboard" class="back-link">Back to dashboard</a>
+
+  @if (loading()) {
+    <div class="state-card">Loading course details…</div>
+  } @else if (error()) {
+    <div class="state-card error-state">{{ error() }}</div>
+  } @else if (course(); as selectedCourse) {
+    <p class="eyebrow">{{ selectedCourse.code }}</p>
+    <h1>{{ selectedCourse.title }}</h1>
+    <section class="course-summary">
+      <article><strong>{{ selectedCourse.maxCapacity }}</strong><span>Maximum capacity</span></article>
+      <article><strong>{{ selectedCourse.enrollmentCount }}</strong><span>Current enrollments</span></article>
+      <article><strong>{{ selectedCourse.maxCapacity - selectedCourse.enrollmentCount }}</strong><span>Seats remaining</span></article>
+    </section>
+  }
+</main>

@@ -1,0 +1,48 @@
+<main class="course-management">
+  <a [routerLink]="isAdmin() ? '/admin' : '/instructor'" class="back-link">Back to dashboard</a>
+  <h1>{{ isAdmin() ? 'Course management' : 'My courses' }}</h1>
+  @if (message()) { <p class="message">{{ message() }}</p> }
+
+  @if (isAdmin()) {
+    <section>
+      <h2>Create course</h2>
+      <form [formGroup]="createForm" (ngSubmit)="create()">
+        <input formControlName="code" placeholder="Code (CSE-101)">
+        <input formControlName="title" placeholder="Course title">
+        <input type="number" formControlName="maxCapacity" placeholder="Capacity">
+        <button type="submit" [disabled]="createForm.invalid">Create course</button>
+      </form>
+    </section>
+    <section>
+      <h2>Assign instructor</h2>
+      <form [formGroup]="assignmentForm" (ngSubmit)="assignInstructor()">
+        <select formControlName="courseId"><option [ngValue]="0">Select course</option>@for (course of store.entities(); track course.id) { <option [ngValue]="course.id">{{ course.code }} — {{ course.title }}</option> }</select>
+        <select formControlName="instructorId"><option value="">Select instructor</option>@for (instructor of instructors(); track instructor.id) { <option [value]="instructor.id">{{ instructor.displayName }} ({{ instructor.email }})</option> }</select>
+        <button type="submit" [disabled]="assignmentForm.invalid">Assign instructor</button>
+      </form>
+    </section>
+  }
+
+  <section>
+    <h2>{{ isAdmin() ? 'All courses' : 'Assigned courses' }}</h2>
+    @if (store.loading()) { <p>Loading courses…</p> }
+    @if (store.error()) { <p class="error">{{ store.error() }}</p> }
+    @for (course of store.entities(); track course.id) {
+      <article>
+        <strong>{{ course.code }}</strong><span>{{ course.title }}</span><span>{{ course.enrollmentCount }}/{{ course.maxCapacity }} enrolled</span>
+        <button type="button" (click)="selectForEdit(course)">Edit</button>
+        @if (isAdmin()) { <button type="button" (click)="delete(course)">Delete</button> }
+      </article>
+    } @empty { <p>No courses found.</p> }
+  </section>
+
+  @if (selectedCourse()) {
+    <section>
+      <h2>Edit {{ selectedCourse()!.code }}</h2>
+      <form [formGroup]="updateForm" (ngSubmit)="update()">
+        <input formControlName="title" placeholder="Course title">
+        <button type="submit" [disabled]="updateForm.invalid">Save changes</button>
+      </form>
+    </section>
+  }
+</main>

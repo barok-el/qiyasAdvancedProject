@@ -13,6 +13,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
+
         // 1. Supply required test configuration (JWT secret, etc.)
         builder.ConfigureAppConfiguration((context, config) =>
         {

@@ -10,24 +10,15 @@ title: string;
 maxCapacity: number;
 enrollmentCount: number;
 }
-/** Envelope for `GET /api/courses` — TMS API contract list shape (`Pag
-edResponse<T>`). */
+/** Envelope for `GET /api/v2/courses` — TMS API contract list shape (`PagedResponse<T>`). */
 export interface PagedResponse<T> {
-  data: T[];
-  meta: {
-    totalCount: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
-  links: {
-    self: string;
-    next: string | null;
-    prev: string | null;
-    enroll: string;
-  };
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 /** One link from `CourseDetailDto.Links` on `GET /api/courses/{id}`. 
  * */
@@ -36,8 +27,7 @@ href: string;
 rel: string;
 method: string;
 }
-/** Detail payload — mirrors `CourseDetailDto` (list rows do not includ
-e `links`). */
+/** Detail payload — mirrors `CourseDetailDto` (list rows do not include `links`). */
 export interface CourseDetail extends Course {
 links: readonly CourseLink[];
 }

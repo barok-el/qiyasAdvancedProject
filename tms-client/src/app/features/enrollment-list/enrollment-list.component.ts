@@ -1,10 +1,11 @@
-import { Component, effect, inject, viewChild } from '@angular/core';
+import { Component, effect, inject, input, viewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 
 import { Enrollment } from '../../models/enrollment.model';
 import { EnrollmentStore } from '../../store/enrollment.store';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'tms-enrollment-list',
@@ -19,13 +20,15 @@ import { EnrollmentStore } from '../../store/enrollment.store';
 })
 export class EnrollmentListComponent {
   store = inject(EnrollmentStore);
+  private readonly auth = inject(AuthService);
+  readonly management = input(true);
+  readonly title = input('Enrollment Records');
 
-  displayedColumns = [
-    'studentName',
-    'courseName',
-    'status',
-    'actions'
-  ];
+  get displayedColumns(): string[] {
+    return this.management()
+      ? ['studentName', 'courseName', 'status', 'actions']
+      : ['courseName', 'status'];
+  }
 
   dataSource = new MatTableDataSource<Enrollment>();
 
@@ -41,7 +44,11 @@ export class EnrollmentListComponent {
       this.dataSource.paginator = this.paginator();
       this.dataSource.sort = this.sort();
     });
+  }
 
-    this.store.loadEnrollments();
+  ngOnInit(): void {
+    if (this.management()) {
+      this.store.loadEnrollments(this.auth.hasRole('Admin') ? 'admin' : 'instructor');
+    }
   }
 }

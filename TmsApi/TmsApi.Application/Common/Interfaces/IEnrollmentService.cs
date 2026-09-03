@@ -17,5 +17,9 @@ Task<EnrollmentResponseDto> CreateAsync(int courseId, EnrollStudentRequest reque
     int studentId,
     CancellationToken ct);
     Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListAsync(CancellationToken ct);
+    Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListByStudentIdAsync(int studentId, CancellationToken ct);
+    Task<IEnumerable<EnrollmentListItemDto>> GetEnrollmentListForInstructorAsync(string instructorId, CancellationToken ct);
+    Task<Enrollment?> GetForManagementAsync(int id, CancellationToken ct);
     Task<EnrollmentListItemDto?> ApproveAsync(int id, CancellationToken ct);
+    Task<EnrollmentListItemDto?> RejectAsync(int id, CancellationToken ct);
 }

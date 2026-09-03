@@ -36,4 +36,14 @@ body {
   margin: 0;
   height: 100%;
 }
+
+:root {
+  --tms-text: #0f172a;
+  --tms-muted: #64748b;
+  --tms-primary: #2563eb;
+  --tms-primary-soft: #eff6ff;
+  --tms-border: #e2e8f0;
+  --tms-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+  --tms-shadow-lg: 0 14px 30px rgba(15, 23, 42, .12);
+}
 /* You can add global styles to this file, and also import other style files */

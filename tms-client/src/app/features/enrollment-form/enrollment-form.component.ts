@@ -1,5 +1,6 @@
 import { Component, inject, signal } from "@angular/core";
 import { ActivatedRoute } from '@angular/router';
+import { EnrollmentService } from '../../services/enrollment.service';
 import {
 FormBuilder,
 FormControl,
@@ -17,13 +18,11 @@ FormArray,
 export class EnrollmentFormComponent {
 
   private fb = inject(FormBuilder);
+  private readonly enrollmentService = inject(EnrollmentService);
   submitted = signal(false);
+  error = signal<string | null>(null);
   form = this.fb.nonNullable.group({
-  studentId: [
-  "",
-  [Validators.required, Validators.pattern("^STU-[0-9]{4}$")],
-  ],
-  courseId: ["", Validators.required],
+  courseCode: ["", Validators.required],
   term: ["Fall 2026", Validators.required], // Pre-filled with a default term
   notes: [""], // No validators this field is optional
   backupCourses: this.fb.array<FormControl<string>>([]), 
@@ -44,9 +43,11 @@ export class EnrollmentFormComponent {
     }
     submit() {
     if (this.form.valid) {
-      const payload = this.form.getRawValue();
-      console.log("Enrollment payload:", payload);
-      this.submitted.set(true);
+      this.error.set(null);
+      this.enrollmentService.enroll(this.form.controls.courseCode.value).subscribe({
+        next: () => this.submitted.set(true),
+        error: () => this.error.set('Enrollment could not be submitted. The course may be full or already requested.')
+      });
     } 
     else {
       this.form.markAllAsTouched();
@@ -55,10 +56,10 @@ export class EnrollmentFormComponent {
   private route = inject(ActivatedRoute);
 
     constructor() {
-      const courseId = this.route.snapshot.queryParamMap.get('courseId');
+      const courseCode = this.route.snapshot.queryParamMap.get('courseCode');
 
-      if (courseId) {
-        this.form.controls.courseId.setValue(courseId);
+      if (courseCode) {
+        this.form.controls.courseCode.setValue(courseCode);
       }
     }
 

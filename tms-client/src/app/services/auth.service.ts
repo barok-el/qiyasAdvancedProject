@@ -16,6 +16,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -24,6 +31,11 @@ export interface LoginResponse {
   firstName: string;
   lastName: string;
   roles: string[];
+}
+
+interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
 }
 
 @Injectable({
@@ -51,6 +63,20 @@ export class AuthService {
            false;
   }
 
+  getDefaultRoute(): string {
+    const roles = this.currentUser()?.roles ?? [];
+
+    if (roles.includes('Admin')) {
+      return '/admin';
+    }
+
+    if (roles.includes('Instructor')) {
+      return '/instructor';
+    }
+
+    return '/dashboard';
+  }
+
   async login(credentials: LoginRequest): Promise<void> {
     const response = await firstValueFrom(
       this.http.post<LoginResponse>(
@@ -73,6 +99,26 @@ export class AuthService {
     });
   }
 
+  async register(request: RegisterRequest): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/register`, request));
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/forgot-password`, { email }));
+  }
+
+  async resetPassword(
+    email: string,
+    token: string,
+    newPassword: string
+  ): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/reset-password`, {
+      email,
+      token,
+      newPassword
+    }));
+  }
+
   getAccessToken(): string | null {
     return this.accessToken();
   }
@@ -85,7 +131,7 @@ export class AuthService {
     }
 
     const response = await firstValueFrom(
-      this.http.post<LoginResponse>(
+      this.http.post<RefreshResponse>(
         `${this.base}/refresh`,
         {
           refreshToken: token
@@ -97,14 +143,6 @@ export class AuthService {
     // old refresh token is replaced with the new one.
     this.accessToken.set(response.accessToken);
     this.refreshToken.set(response.refreshToken);
-
-    this.currentUser.set({
-      userId: response.userId,
-      email: response.email,
-      firstName: response.firstName,
-      lastName: response.lastName,
-      roles: response.roles
-    });
   }
 
   logout(): void {

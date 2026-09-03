@@ -1,6 +1,5 @@
 namespace TmsApi.Application.Dtos;
 
 public record GradeRequest(
-    int StudentId,
-    int CourseId,
+    int EnrollmentId,
     decimal Score);

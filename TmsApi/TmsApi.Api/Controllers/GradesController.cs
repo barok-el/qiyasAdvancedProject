@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Application.Dtos;
@@ -6,30 +9,53 @@ using TmsApi.Infrastructure.Persistence;
 namespace TmsApi.Api.Controllers;
 
 [ApiController]
-[Route("api/grades")]
+[Route("api/v{version:apiVersion}/grades")]
+[ApiVersion("2.0")]
 public class GradesController(TmsDbContext context) : ControllerBase
 {
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken ct) =>
+        Ok(await ProjectGrades(context.Enrollments).ToListAsync(ct));
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMine(CancellationToken ct)
+    {
+        var student = await GetCurrentStudentAsync(ct);
+        if (student is null)
+            return Forbid();
+
+        return Ok(await ProjectGrades(context.Enrollments
+            .Where(item => item.StudentId == student.Id))
+            .ToListAsync(ct));
+    }
+
+    [Authorize(Roles = "Instructor")]
+    [HttpGet("instructor")]
+    public async Task<IActionResult> GetForInstructor(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Forbid();
+
+        return Ok(await ProjectGrades(context.Enrollments
+            .Where(item => item.Course.InstructorId == userId))
+            .ToListAsync(ct));
+    }
+
+    [Authorize(Roles = "Instructor,Admin")]
     [HttpPost]
     public async Task<IActionResult> SubmitGrade(
         [FromBody] GradeRequest request,
         CancellationToken ct)
     {
-        if (request.StudentId <= 0)
+        if (request.EnrollmentId <= 0)
         {
             return BadRequest(new ProblemDetails
             {
-                Title = "Invalid student ID",
-                Detail = "Student ID must be greater than zero.",
-                Status = StatusCodes.Status400BadRequest
-            });
-        }
-
-        if (request.CourseId <= 0)
-        {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Invalid course ID",
-                Detail = "Course ID must be greater than zero.",
+                Title = "Invalid enrollment ID",
+                Detail = "Enrollment ID must be greater than zero.",
                 Status = StatusCodes.Status400BadRequest
             });
         }
@@ -45,29 +71,44 @@ public class GradesController(TmsDbContext context) : ControllerBase
         }
 
         var enrollment = await context.Enrollments
-            .FirstOrDefaultAsync(
-                e =>
-                    e.StudentId == request.StudentId &&
-                    e.CourseId == request.CourseId,
-                ct);
+            .Include(item => item.Course)
+            .FirstOrDefaultAsync(item => item.Id == request.EnrollmentId, ct);
 
         if (enrollment is null)
-        {
-            return NotFound(new ProblemDetails
-            {
-                Title = "Enrollment not found",
-                Detail =
-                    $"Student {request.StudentId} is not enrolled in course {request.CourseId}.",
-                Status = StatusCodes.Status404NotFound
-            });
-        }
+            return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var canManage = User.IsInRole("Admin") ||
+            (User.IsInRole("Instructor") && enrollment.Course.InstructorId == userId);
+
+        if (!canManage)
+            return Forbid();
 
         enrollment.Grade = request.Score;
-
         await context.SaveChangesAsync(ct);
 
-        return Ok(new GradeResponse(
-            enrollment.Id.ToString(),
-            true));
+        return Ok(new GradeResponse(enrollment.Id.ToString(), true));
+    }
+
+    private static IQueryable<GradeRecordDto> ProjectGrades(
+        IQueryable<TmsApi.Domain.Entities.Enrollment> enrollments) =>
+        enrollments
+            .AsNoTracking()
+            .OrderByDescending(item => item.EnrolledAt)
+            .Select(item => new GradeRecordDto(
+                item.Id,
+                item.StudentId,
+                item.Student.Name,
+                item.CourseId,
+                item.Course.Code,
+                item.Course.Title,
+                item.Grade));
+
+    private async Task<TmsApi.Domain.Entities.Student?> GetCurrentStudentAsync(CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return userId is null
+            ? null
+            : await context.Students.SingleOrDefaultAsync(student => student.UserId == userId, ct);
     }
 }

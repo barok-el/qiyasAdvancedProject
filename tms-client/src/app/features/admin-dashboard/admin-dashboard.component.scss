@@ -1,0 +1,28 @@
+.admin-workspace { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+.admin-header, .header-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.admin-header { margin-bottom: 2rem; }
+.eyebrow { margin: 0; color: var(--tms-primary); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+h1, h2, h3 { color: var(--tms-text); }
+h1 { margin: .35rem 0; font-size: clamp(1.8rem, 4vw, 2.5rem); }
+.admin-header p:not(.eyebrow), .management-section > div > p { color: var(--tms-muted); }
+.role-badge { padding: .4rem .75rem; border-radius: 999px; background: #eef2ff; color: #4338ca; font-size: .82rem; font-weight: 800; }
+button { padding: .7rem 1rem; border: 1px solid var(--tms-border); border-radius: .6rem; background: white; color: var(--tms-text); font: inherit; font-weight: 700; cursor: pointer; }
+button:hover { border-color: var(--tms-primary); color: var(--tms-primary); }
+.overview-grid, .management-grid { display: grid; gap: 1rem; }
+.overview-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.overview-card, .management-card { border: 1px solid var(--tms-border); border-radius: .9rem; background: white; box-shadow: var(--tms-shadow); }
+.overview-card { padding: 1.25rem; }
+.overview-card strong { display: block; color: var(--tms-text); font-size: 1.9rem; }
+.overview-card span { color: var(--tms-muted); font-size: .88rem; }
+.overview-card.pending { border-top: 3px solid #d97706; }
+.management-section { margin-top: 2.5rem; }
+.management-section h2 { margin-bottom: .25rem; }
+.management-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 1rem; }
+.management-card { padding: 1.25rem; color: inherit; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease; }
+a.management-card:hover { transform: translateY(-3px); box-shadow: var(--tms-shadow-lg); }
+.management-card h3 { margin-top: 0; }
+.management-card p { min-height: 3rem; color: var(--tms-muted); }
+.management-card span { color: var(--tms-primary); font-size: .9rem; font-weight: 750; }
+.management-card.unavailable { background: #fafafa; }
+.management-card.unavailable span { color: var(--tms-muted); }
+@media (max-width: 760px) { .admin-workspace { padding: 1.25rem; } .admin-header { align-items: flex-start; flex-direction: column; } .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

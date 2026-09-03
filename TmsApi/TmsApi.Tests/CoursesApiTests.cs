@@ -23,7 +23,7 @@ response.Content.ReadFromJsonAsync<PagedCoursesJson>();
 Assert.NotNull(page?.Items);
 }
 [Fact]
-public async Task CreateCourse_InvalidCode_ReturnsValidationError()
+public async Task CreateCourse_WithoutAdminRole_ReturnsUnauthorized()
 {
 // Act — post invalid payload (empty code) to the V2 controller
 var response = await _client.PostAsJsonAsync("/api/v2.0/courses", new
@@ -32,10 +32,8 @@ code = "",
 title = "Intro to TMS Security",
 maxCapacity = 30
 });
-// Assert — validation failure returns 400 Bad Request or 422 Unprocessable Entity
-Assert.True(
-response.StatusCode is HttpStatusCode.BadRequest or
-HttpStatusCode.UnprocessableEntity);
+// Course creation is Admin-only.
+Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 }
 private sealed class PagedCoursesJson
 {
